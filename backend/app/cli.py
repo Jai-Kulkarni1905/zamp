@@ -2,6 +2,7 @@
 
     python -m app.cli run <pdf> [--force-extract] [--json]
     python -m app.cli reset                 wipe runs, reseed vendors and POs
+    python -m app.cli demo                  RESET, then all test invoices in demo order vs PLAN.md section 7
     python -m app.cli record-fixtures [--only HP-1 ...]   LIVE Gemini calls, one per uncached PDF
 """
 
@@ -116,6 +117,34 @@ def cmd_record(args: argparse.Namespace) -> int:
     return 1 if failures else 0
 
 
+def cmd_demo(_: argparse.Namespace) -> int:
+    """Fresh reset, then every test invoice in demo order (manifest run_order), vs PLAN.md section 7."""
+    manifest = json.loads((ROOT / "data" / "invoices" / "manifest.json").read_text(encoding="utf-8"))
+    invoices = sorted(manifest["invoices"], key=lambda i: i["run_order"])
+    Session = session_factory()
+    bus = EventBus()
+    failures = 0
+    with Session() as session:
+        wipe_runs(session)
+        seed_master_data(session, get_settings().seed_dir)
+        print(f"Fresh reset. Running {len(invoices)} invoices in demo order.\n")
+        print(f"  {'#':<2} {'ID':<7} {'Expected':<34} {'Actual':<34} Result")
+        for inv in invoices:
+            path = ROOT / "data" / "invoices" / inv["file"]
+            run = process_run(session, create_run(session, path.name, path.read_bytes()).id, bus=bus)
+            want = (inv["expected"]["decision"], set(inv["expected"]["flags"]))
+            got = (run.decision, set(run.flags or []))
+            ok = run.status == "DONE" and got == want
+            failures += not ok
+            show = lambda d, f: f"{d} {','.join(sorted(f))}".strip()  # noqa: E731
+            print(f"  {inv['run_order']:<2} {inv['id']:<7} {show(*want):<34} {show(str(got[0]), got[1]):<34} "
+                  f"{'PASS' if ok else 'FAIL'}")
+            if inv["id"] in ("EC-1-C", "EC-3", "EC-4") or not ok:
+                print(f"{'':14}{run.explanation_json['verdict'] if run.explanation_json else run.error}")
+    print(f"\n{len(invoices) - failures}/{len(invoices)} match PLAN.md section 7")
+    return 1 if failures else 0
+
+
 def main(argv: list[str] | None = None) -> int:
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")  # ₹ on Windows consoles
@@ -127,6 +156,8 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("--json", action="store_true", help="print only the decision JSON")
     r.set_defaults(fn=cmd_run)
     sub.add_parser("reset", help="wipe runs and reseed master data").set_defaults(fn=cmd_reset)
+    sub.add_parser("demo", help="RESETS the DB, then runs all test invoices in demo order and checks "
+                                "them against PLAN.md section 7").set_defaults(fn=cmd_demo)
     rec = sub.add_parser("record-fixtures", help="LIVE: record Gemini extractions for data/invoices/*.pdf")
     rec.add_argument("--only", nargs="*", help="scenario ids, e.g. HP-1 EC-3")
     rec.set_defaults(fn=cmd_record)

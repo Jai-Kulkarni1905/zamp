@@ -185,7 +185,7 @@ def test_stats(client: TestClient, demo: dict[str, str]) -> None:
     expected_total = Decimal("177000") * 2 + Decimal("203610") + 240000 + 90000 + 106200 + 118000
     assert Decimal(s["value_processed"]) == expected_total
     assert Decimal(s["value_approved"]) == Decimal("177000") + 203610 + 240000
-    assert s["flags"]["DUPLICATE"] == 1 and s["flags"]["OVER_PO"] == 2
+    assert s["flags"]["DUPLICATE"] == 1 and s["flags"]["OVER_PO"] == 1
 
 
 def test_review_override(client: TestClient, demo: dict[str, str]) -> None:

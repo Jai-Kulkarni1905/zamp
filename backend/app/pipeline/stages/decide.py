@@ -31,6 +31,10 @@ def decide(rules: list[RuleResult]) -> tuple[StageResult, DecisionResult]:
         decision = Decision.APPROVED
 
     raised = {r.flag for r in rules if r.flag is not None and r.outcome in (Outcome.WARN, Outcome.FAIL)}
+    if Flag.DUPLICATE in raised:
+        # A duplicate's PO overage only exists because the original already consumed the PO, so it is
+        # not a second problem. The AMT-REMAINING result stays recorded; only the flag is dropped (A42).
+        raised.discard(Flag.OVER_PO)
     flags = [f for f in Flag if f in raised]
     result = DecisionResult(decision=decision, flags=flags, hard_fails=hard, soft_fails=soft, review_warnings=review)
     message = decision.value + (f" ({', '.join(flags)})" if flags else "")

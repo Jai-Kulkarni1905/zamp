@@ -244,11 +244,13 @@ invoices print "Rs." rather than a currency code. The Normalize stage records "I
 printed)" so the assumption is visible. A currency that is printed and is not INR still fails
 VAL-CURRENCY.
 
-**A42. Flags are truthful even on rejected runs, but next actions follow the decision.** A
-duplicate that arrives after the original consumed the PO also fails AMT-REMAINING, so EC-2
-carries both `DUPLICATE` and `OVER_PO`: paying it really would overpay the PO. The decision is
-still REJECTED, and a rejected run lists next actions only for its HARD reasons ("Do not pay"),
-so the reviewer is not told to amend a PO for an invoice that must not be paid.
+**A42. A duplicate is flagged DUPLICATE only, not also OVER_PO.** A duplicate that arrives after
+the original consumed the PO also fails AMT-REMAINING. That overage is not a second problem: it
+exists only because the invoice is a copy. So when DUPLICATE is raised, the OVER_PO flag is dropped
+(section 7 lists EC-2 as `DUPLICATE`). The AMT-REMAINING result is still stored and shown in the
+amount stage, so no check is hidden, and the decision (REJECTED) is unchanged. A rejected run lists
+next actions only for its HARD reasons ("Do not pay"), so the reviewer is not told to amend a PO for
+an invoice that must not be paid.
 
 **A43. Gemini's confidence is self-reported.** The model rates its own confidence, so the numbers
 are not calibrated probabilities. They are one signal; the grounding check (A13) is the

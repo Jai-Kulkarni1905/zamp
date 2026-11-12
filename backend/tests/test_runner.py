@@ -48,8 +48,7 @@ def test_full_demo_order(session: Session, settings: Settings) -> None:
         "EC-1-A": ("APPROVED", []),
         "EC-1-B": ("APPROVED", []),
         "EC-1-C": ("NEEDS_REVIEW", ["OVER_PO"]),
-        # HP-1 already consumed PO-2026-0101, so the duplicate would also overpay it (A42).
-        "EC-2": ("REJECTED", ["OVER_PO", "DUPLICATE"]),
+        "EC-2": ("REJECTED", ["DUPLICATE"]),  # its PO overage is a consequence, not a flag (A42)
         "EC-3": ("NEEDS_REVIEW", ["PO_INFERRED", "LOW_CONFIDENCE"]),
         "EC-4": ("NEEDS_REVIEW", ["FRAUD_RISK"]),
     }
@@ -105,7 +104,7 @@ def test_resubmitting_same_file_is_duplicate(session: Session, settings: Setting
     _write_fixtures(settings)
     assert _run(session, settings, "HP-1").decision == "APPROVED"
     second = _run(session, settings, "HP-1")
-    assert second.decision == "REJECTED" and "DUPLICATE" in second.flags
+    assert second.decision == "REJECTED" and second.flags == ["DUPLICATE"]
 
 
 def test_upload_stored_by_hash(session: Session, settings: Settings) -> None:

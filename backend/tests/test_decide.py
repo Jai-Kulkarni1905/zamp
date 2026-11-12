@@ -47,3 +47,18 @@ def test_skipped_rules_are_ignored() -> None:
 def test_flags_not_raised_on_pass() -> None:
     _, d = decide([rule(S, "VEN-BANK", Outcome.PASS, Severity.SOFT, "x", review=True, flag=Flag.FRAUD_RISK)])
     assert d.flags == []
+
+
+def test_duplicate_drops_over_po_flag_but_keeps_the_rule() -> None:
+    over = rule(S, "AMT-REMAINING", Outcome.FAIL, Severity.SOFT, "over", review=True, flag=Flag.OVER_PO)
+    dup = rule(S, "DUP-NUMBER", Outcome.FAIL, Severity.HARD, "dup", flag=Flag.DUPLICATE)
+    stage, d = decide([over, dup])
+    assert d.decision == Decision.REJECTED and d.flags == [Flag.DUPLICATE]
+    assert "AMT-REMAINING" in d.soft_fails  # still counted and shown, just not flagged
+
+
+def test_over_po_kept_when_not_a_duplicate() -> None:
+    fraud = rule(S, "VEN-BANK", Outcome.FAIL, Severity.SOFT, "x", review=True, flag=Flag.FRAUD_RISK)
+    over = rule(S, "AMT-REMAINING", Outcome.FAIL, Severity.SOFT, "x", review=True, flag=Flag.OVER_PO)
+    _, d = decide([fraud, over])
+    assert d.flags == [Flag.FRAUD_RISK, Flag.OVER_PO]
