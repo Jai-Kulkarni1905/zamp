@@ -212,4 +212,4 @@ Do ONE layer per Claude Code session. Each layer ends with its acceptance check 
 - [x] Layer 4
 - [x] Layer 5
 - [x] Layer 6
-- [ ] Layer 7 (deploy files ready; waiting on live URL check from a phone)
+- [x] Layer 7

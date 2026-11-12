@@ -62,4 +62,10 @@ dashboard numbers and PO balances, twice. It waits for a sleeping service to wak
 - **Rotate the Gemini key**: change `GEMINI_API_KEY` in Render > Environment; Render redeploys.
 - **Quota**: anyone with the URL can upload a new PDF, which costs one Gemini call. Set `LLM_MODE=fixture` in
   Render to make the deployment cache-only (new PDFs then end in ERROR "no recorded extraction").
-- **Deploys**: every push to the default branch redeploys (`autoDeploy: true`).
+- **Deploys**: every push to the default branch redeploys (`autoDeploy: true`). Runs and PDFs live in
+  Postgres, so a redeploy keeps the demo state.
+- **Region**: the live service ended up in Render's US West region, not Singapore. Runs take about 3.8s
+  (mostly the 300ms demo pause per stage), so it was left there.
+- **Phones on mobile data**: if the URL does not load, first wait a minute (cold start), then try a
+  different DNS (Private DNS `dns.google`). Some Indian carriers block by domain name; a custom domain on the
+  same Render service is the durable fix.
