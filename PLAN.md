@@ -209,7 +209,7 @@ Do ONE layer per Claude Code session. Each layer ends with its acceptance check 
 - [x] Layer 1
 - [x] Layer 2
 - [x] Layer 3
-- [ ] Layer 4
+- [x] Layer 4
 - [ ] Layer 5
 - [ ] Layer 6
 - [ ] Layer 7

@@ -299,3 +299,22 @@ result.
 **A53. On Windows, call the API at 127.0.0.1, not localhost.** `localhost` tries IPv6 (`::1`)
 first and waits about 2 seconds before falling back to IPv4, which delays the first SSE events.
 The Vite dev proxy (Layer 4) targets `http://127.0.0.1:8000`.
+
+## Live run view (Layer 4)
+
+**A54. The invoice preview is the browser's own PDF viewer.** The run page embeds
+`/api/runs/{id}/file` in an iframe, so no PDF rendering library is needed and scanned and text
+PDFs look exactly as received. The trade-off: confidence chips cannot be drawn on top of the page,
+so per-field confidence is shown in the Extract stage's field table instead.
+
+**A55. The event log shows each stage's outcome, not its RUNNING event.** RUNNING events drive
+the live stage cards; listing them in the log only doubled its length. The API and SSE stream
+still carry every event.
+
+**A56. Fonts load from Google Fonts with system fallbacks.** Inter and JetBrains Mono come from
+`fonts.googleapis.com`; if that is blocked the UI falls back to the system sans and monospace
+fonts with no layout change. Self-hosting them is a Layer 7 option.
+
+**A57. A reviewer override changes the headline, not the record.** After an override the banner
+leads with the reviewer's decision and note, and shows the automated verdict underneath; the
+decision card keeps the automated explanation unchanged (A30, A48).

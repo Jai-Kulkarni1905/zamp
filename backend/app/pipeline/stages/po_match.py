@@ -89,7 +89,7 @@ def _explicit(inv: NormalizedInvoice, vendor: VendorMatch | None, pos: dict[str,
         return rule(S_PO, "PO-EXPLICIT", Outcome.FAIL, Severity.SOFT, f"PO {po.po_number} is {po.status}",
                     ev, review=True), None
     return rule(S_PO, "PO-EXPLICIT", Outcome.PASS, Severity.SOFT,
-                f"PO {po.po_number} found, open, and belongs to {vendor.vendor.legal_name}", ev), POMatch(po, "EXPLICIT")
+                f"{po.po_number} found, open, and belongs to {vendor.vendor.legal_name}", ev), POMatch(po, "EXPLICIT")
 
 
 def _infer(inv: NormalizedInvoice, vendor: VendorMatch | None, pos: dict[str, PORec]) -> tuple[RuleResult, POMatch | None, list[dict[str, Any]]]:
