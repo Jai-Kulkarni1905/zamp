@@ -188,4 +188,4 @@ NEEDS_REVIEW run consumes PO balance (A22).
 | EC-4 | Approved vendor, valid PO, bank account differs: VEN-BANK FAIL SOFT | NEEDS_REVIEW, FRAUD_RISK, "verify by phone on file" |
 
 Run order: HP-1, HP-2, EC-1 (A, B, C), EC-2, EC-3, EC-4. EC-1 needs A and B approved first; EC-2
-needs HP-1 approved first. Exact steps go in `docs/demo-script.md` (Layer 7).
+needs HP-1 approved first. `python -m app.cli demo` runs them in this order from a fresh reset.

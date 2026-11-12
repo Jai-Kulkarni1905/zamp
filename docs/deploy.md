@@ -56,7 +56,7 @@ dashboard numbers and PO balances, twice. It waits for a sleeping service to wak
 ## Operating notes
 
 - **Cold start**: the free plan sleeps after 15 minutes idle; the next request takes about a minute.
-  Open the URL a few minutes before a demo (see `docs/demo-script.md`).
+  Open the URL a few minutes before a demo.
 - **Reset before a demo**: run the rehearsal (it ends in the demo state), or
   `curl -X POST https://<name>.onrender.com/api/admin/reset -H "X-Admin-Token: <token>"` for an empty dashboard.
 - **Rotate the Gemini key**: change `GEMINI_API_KEY` in Render > Environment; Render redeploys.
