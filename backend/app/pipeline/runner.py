@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 from app import repo
 from app.config import Settings, get_settings
 from app.llm.gemini import ExtractionResult, LLMError, extract_invoice
-from app.models import RuleResultRow, Run
+from app.models import RuleResultRow, Run, RunFile
 from app.pipeline.events import EventBus, record_event
 from app.pipeline.stages.decide import decide
 from app.pipeline.stages.duplicates import check_duplicates
@@ -38,23 +38,34 @@ from app.schemas import (
 )
 
 
+def _fit(value: str | None, size: int) -> str | None:
+    """Trim to a column's length: Postgres rejects longer values where SQLite silently accepts them."""
+    return value[:size] if value is not None else None
+
+
 def _now() -> datetime:
     return datetime.now(timezone.utc)
 
 
 def create_run(session: Session, filename: str, pdf_bytes: bytes, settings: Settings | None = None) -> Run:
-    """Store the upload under data/uploads/<sha256>.pdf and create a QUEUED run."""
-    settings = settings or get_settings()
+    """Store the PDF bytes in the database (once per hash, A62) and create a QUEUED run."""
     file_hash = sha256(pdf_bytes)
-    settings.uploads_dir.mkdir(parents=True, exist_ok=True)
-    path = settings.uploads_dir / f"{file_hash}.pdf"
-    if not path.exists():
-        path.write_bytes(pdf_bytes)
-    run = Run(id=str(uuid.uuid4()), file_hash=file_hash, filename=filename, file_path=str(path),
+    if session.get(RunFile, file_hash) is None:
+        session.add(RunFile(file_hash=file_hash, content=pdf_bytes, size_bytes=len(pdf_bytes), created_at=_now()))
+    run = Run(id=str(uuid.uuid4()), file_hash=file_hash, filename=_fit(filename, 255) or "upload.pdf",
+              file_path=f"db:{file_hash}",
               status=RunStatus.QUEUED, flags=[], created_at=_now())
     session.add(run)
     session.commit()
     return run
+
+
+def load_pdf(session: Session, run: Run) -> bytes:
+    """PDF bytes for a run: from run_files, or from disk for runs created before A62."""
+    stored = session.get(RunFile, run.file_hash)
+    if stored is not None:
+        return stored.content
+    return Path(run.file_path).read_bytes()
 
 
 class _StageFailure(Exception):
@@ -198,9 +209,9 @@ class _Pipeline:
         run.matched_po = s.po.po.po_number if s.po else None
         run.po_match_type = s.po.match_type if s.po else None
         run.vendor_id = s.vendor.vendor.vendor_id if s.vendor else None
-        run.vendor_key = s.vendor_key
-        run.invoice_number = s.inv.invoice_number
-        run.invoice_number_canonical = s.inv.invoice_number_canonical
+        run.vendor_key = _fit(s.vendor_key, 64)
+        run.invoice_number = _fit(s.inv.invoice_number, 64)
+        run.invoice_number_canonical = _fit(s.inv.invoice_number_canonical, 64)
         run.invoice_date = s.inv.invoice_date
         run.total = s.inv.total
         run.status = RunStatus.DONE
@@ -220,7 +231,7 @@ def process_run(
     run = session.get(Run, run_id)
     if run is None:
         raise ValueError(f"run {run_id} not found")
-    pdf_bytes = Path(run.file_path).read_bytes()
+    pdf_bytes = load_pdf(session, run)
     run.status = RunStatus.RUNNING
     session.commit()
     p = _Pipeline(session, bus, run, settings.stage_delay_ms)

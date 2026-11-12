@@ -34,6 +34,14 @@ def _load_dotenv(path: Path) -> None:
 LLMMode = Literal["fixture", "live"]
 
 
+def normalize_db_url(url: str) -> str:
+    """Hosts hand out postgres:// or postgresql:// URLs; SQLAlchemy needs the psycopg driver named."""
+    for prefix in ("postgres://", "postgresql://"):
+        if url.startswith(prefix):
+            return "postgresql+psycopg://" + url[len(prefix):]
+    return url
+
+
 @dataclass(frozen=True)
 class Settings:
     gemini_api_key: str | None
@@ -69,7 +77,7 @@ def get_settings() -> Settings:
         gemini_api_key=_env("GEMINI_API_KEY"),
         gemini_model=_env("GEMINI_MODEL"),
         llm_mode=mode,  # type: ignore[arg-type]
-        database_url=_env("DATABASE_URL") or f"sqlite:///{(ROOT / 'data' / 'ap.db').as_posix()}",
+        database_url=normalize_db_url(_env("DATABASE_URL") or f"sqlite:///{(ROOT / 'data' / 'ap.db').as_posix()}"),
         as_of_date=date.fromisoformat(as_of) if as_of else None,
         fixtures_dir=ROOT / "data" / "fixtures",
         uploads_dir=ROOT / "data" / "uploads",

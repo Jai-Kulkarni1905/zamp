@@ -10,7 +10,7 @@ from pathlib import Path
 from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
-from app.models import POLine, PurchaseOrder, RuleResultRow, Run, StageEvent, Vendor
+from app.models import POLine, PurchaseOrder, RuleResultRow, Run, RunFile, StageEvent, Vendor
 
 
 def _rows(path: Path) -> list[dict[str, str]]:
@@ -53,5 +53,6 @@ def wipe_runs(session: Session) -> int:
     session.execute(delete(RuleResultRow))
     session.execute(delete(StageEvent))
     count = session.execute(delete(Run)).rowcount
+    session.execute(delete(RunFile))
     session.commit()
     return count

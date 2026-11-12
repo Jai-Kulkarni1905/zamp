@@ -6,7 +6,7 @@ from datetime import date, datetime, timezone
 from decimal import Decimal
 from typing import Any
 
-from sqlalchemy import JSON, Date, DateTime, ForeignKey, Integer, String, Text, TypeDecorator
+from sqlalchemy import JSON, Date, DateTime, ForeignKey, Integer, LargeBinary, String, Text, TypeDecorator
 from sqlalchemy.engine import Dialect
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -146,3 +146,14 @@ class RuleResultRow(Base):
     flag: Mapped[str | None] = mapped_column(String(16))
     message: Mapped[str] = mapped_column(Text)
     evidence_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+
+
+class RunFile(Base):
+    """Uploaded PDF bytes, keyed by SHA-256. Kept in the database because container disks are wiped on
+    restart (A62). Identical uploads share one row."""
+
+    __tablename__ = "run_files"
+    file_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    content: Mapped[bytes] = mapped_column(LargeBinary)
+    size_bytes: Mapped[int] = mapped_column(Integer)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime)

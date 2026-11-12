@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -107,7 +106,16 @@ def test_resubmitting_same_file_is_duplicate(session: Session, settings: Setting
     assert second.decision == "REJECTED" and second.flags == ["DUPLICATE"]
 
 
-def test_upload_stored_by_hash(session: Session, settings: Settings) -> None:
+def test_upload_stored_in_db_once_per_hash(session: Session, settings: Settings) -> None:
+    from sqlalchemy import func
+
+    from app.models import RunFile
+
     _write_fixtures(settings)
-    run = _run(session, settings, "HP-2")
-    assert Path(run.file_path).name == f"{run.file_hash}.pdf" and Path(run.file_path).is_file()
+    first = _run(session, settings, "HP-2")
+    _run(session, settings, "HP-2")  # same bytes again
+    stored = session.get(RunFile, first.file_hash)
+    assert stored is not None and stored.content == (INVOICES / "HP-2.pdf").read_bytes()
+    assert session.scalar(select(func.count()).select_from(RunFile)) == 1
+    assert first.file_path == f"db:{first.file_hash}"
+    assert not settings.uploads_dir.exists()  # nothing written to local disk

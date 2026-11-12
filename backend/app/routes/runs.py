@@ -10,7 +10,7 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, UploadFile
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import Response, StreamingResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -19,7 +19,7 @@ from app.config import IST, MAX_UPLOAD_BYTES, Settings
 from app.deps import get_app_settings, get_bus, get_session, get_sessions, get_worker
 from app.models import Run, StageEvent
 from app.pipeline.events import EventBus
-from app.pipeline.runner import create_run
+from app.pipeline.runner import create_run, load_pdf
 from app.routes._common import detail, summary, vendor_names
 from app.schemas import Decision, Flag, RunStatus, Stage, StageEventOut, StageStatus
 from app.worker import RunWorker
@@ -104,12 +104,15 @@ def get_run(run_id: str, session: Session = Depends(get_session)) -> RunDetail:
 
 
 @router.get("/{run_id}/file")
-def get_file(run_id: str, session: Session = Depends(get_session)) -> FileResponse:
+def get_file(run_id: str, session: Session = Depends(get_session)) -> Response:
     run = _get_run(session, run_id)
-    path = Path(run.file_path)
-    if not path.is_file():
-        raise HTTPException(404, "Original file is no longer stored")
-    return FileResponse(path, media_type="application/pdf", filename=run.filename, content_disposition_type="inline")
+    try:
+        content = load_pdf(session, run)
+    except OSError:
+        raise HTTPException(404, "Original file is no longer stored") from None
+    safe_name = run.filename.replace('"', "")
+    return Response(content, media_type="application/pdf",
+                    headers={"Content-Disposition": f'inline; filename="{safe_name}"', "Cache-Control": "private, max-age=3600"})
 
 
 @router.post("/{run_id}/review", response_model=RunDetail)

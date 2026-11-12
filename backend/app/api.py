@@ -4,12 +4,14 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from sqlalchemy import Engine, func, select
 
-from app.config import Settings, get_settings
+from app.config import ROOT, Settings, get_settings
 from app.db import make_engine, session_factory
 from app.models import Base, Vendor
 from app.pipeline.events import EventBus
@@ -50,4 +52,27 @@ def create_app(settings: Settings | None = None, engine: Engine | None = None) -
     def health() -> dict[str, object]:
         return {"ok": True, "llm_mode": settings.llm_mode, "worker_busy": worker.busy}
 
+    mount_frontend(app, ROOT / "frontend" / "dist")
     return app
+
+
+def mount_frontend(app: FastAPI, dist: Path) -> None:
+    """Serve the built React app from the same origin (one container). Unknown non-API paths get
+    index.html so client routes like /run/:id survive a reload. No-op in dev, where Vite serves the UI."""
+    index = dist / "index.html"
+    if not index.is_file():
+        return
+    root = dist.resolve()
+
+    @app.get("/{path:path}", include_in_schema=False)
+    def spa(path: str) -> FileResponse:
+        if path.startswith("api/") or path == "api":
+            raise HTTPException(404, "Not found")
+        candidate = (dist / path).resolve()
+        if path and candidate.is_file() and root in candidate.parents:
+            # Hashed build assets never change; index.html must always be revalidated.
+            cache = "public, max-age=31536000, immutable" if path.startswith("assets/") else "no-cache"
+            return FileResponse(candidate, headers={"Cache-Control": cache})
+        if path.startswith("assets/"):
+            raise HTTPException(404, "Not found")  # a missing bundle must not come back as HTML
+        return FileResponse(index, headers={"Cache-Control": "no-cache"})

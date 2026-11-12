@@ -238,3 +238,31 @@ def test_health_and_cors(client: TestClient) -> None:
     assert client.get("/api/health").json()["llm_mode"] == "fixture"
     r = client.options("/api/runs", headers={"Origin": "http://localhost:5173", "Access-Control-Request-Method": "POST"})
     assert r.headers.get("access-control-allow-origin") == "http://localhost:5173"
+
+
+def test_serves_built_frontend_with_spa_fallback(tmp_path: Path) -> None:
+    from fastapi import FastAPI
+
+    from app.api import mount_frontend
+
+    dist = tmp_path / "dist"
+    (dist / "assets").mkdir(parents=True)
+    (dist / "index.html").write_text("<!doctype html><title>AP</title>")
+    (dist / "assets" / "app-123.js").write_text("console.log(1)")
+    (tmp_path / "secret.txt").write_text("nope")
+    app = FastAPI()
+
+    @app.get("/api/health")
+    def health() -> dict[str, bool]:
+        return {"ok": True}
+
+    mount_frontend(app, dist)
+    c = TestClient(app)
+    assert c.get("/api/health").json() == {"ok": True}  # API routes win
+    assert c.get("/api/missing").status_code == 404  # unknown API path is not swallowed by the SPA
+    assert "<title>AP</title>" in c.get("/").text
+    assert "<title>AP</title>" in c.get("/run/some-id").text  # client route survives reload
+    js = c.get("/assets/app-123.js")
+    assert js.text == "console.log(1)" and "immutable" in js.headers["cache-control"]
+    assert c.get("/assets/missing-999.js").status_code == 404
+    assert "nope" not in c.get("/../secret.txt").text  # no path traversal out of dist

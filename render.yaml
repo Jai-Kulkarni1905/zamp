@@ -1,0 +1,25 @@
+# Render Blueprint: New > Blueprint > pick this repo. Secrets (sync: false) are entered in the dashboard.
+services:
+  - type: web
+    name: ap-invoice-agent
+    runtime: docker
+    plan: free
+    # Put the app in the same region as the Neon database: every stage writes an event, so a
+    # cross-region round trip per write adds seconds to each run. Singapore pairs with Neon ap-southeast-1.
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: LLM_MODE
+        value: live            # cached extractions for known files, one Gemini call for a new PDF
+      - key: GEMINI_MODEL
+        value: gemini-3.6-flash
+      - key: STAGE_DELAY_MS
+        value: "300"           # demo pacing so each stage visibly lights up
+      - key: GEMINI_API_KEY
+        sync: false            # paste from your local .env
+      - key: DATABASE_URL
+        sync: false            # Neon connection string (postgresql://...)
+      - key: ADMIN_TOKEN
+        sync: false            # any password; protects POST /api/admin/reset

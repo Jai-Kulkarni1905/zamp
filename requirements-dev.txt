@@ -1,0 +1,11 @@
+# Development: runtime + test data generation + tests
+-r requirements.txt
+
+# Test data generation (scripts/generate_invoices.py)
+reportlab==5.1.0
+PyMuPDF==2.1
+Pillow==13.0.0
+
+# Tests
+pytest==9.2.0
+httpx==0.28.1

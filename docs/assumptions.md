@@ -340,3 +340,19 @@ run's detail. This is an additive API field; the database schema is unchanged.
 **A61. Dashboard filters live in the URL.** Tab, search, decision, flag, vendor and date range are
 query parameters (for example `/?tab=review` or `/?flag=OVER_PO`), so a filtered view can be
 bookmarked or shared and survives a reload.
+
+## Deploy (Layer 7)
+
+**A62. Uploaded PDFs are stored in the database.** Hosting containers lose their disk on restart and when
+the free plan sleeps, so PDFs live in a `run_files` table keyed by SHA-256 (one row per distinct file).
+The `runs` table is unchanged; `file_path` reads `db:<hash>`. Reset removes them with the runs.
+
+**A63. Production runs `LLM_MODE=live`.** The 8 test PDFs hit the recorded extractions (0 Gemini calls);
+any new PDF costs exactly one call and is cached by hash. Anyone with the URL can therefore spend quota;
+switch to `fixture` to make the deployment cache-only.
+
+**A64. Text is trimmed to column sizes before saving.** Postgres enforces `VARCHAR` lengths and SQLite
+does not, so filename (255), invoice number and vendor key (64) are cut to fit rather than failing the run.
+
+**A65. App and database run in the same region.** Each stage commits an event, about 25 writes per run,
+so the Render service is placed in the region closest to the Neon database (Singapore by default).

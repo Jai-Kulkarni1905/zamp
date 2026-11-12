@@ -1,18 +1,10 @@
-# Test data generation (Layer 1)
-reportlab==5.1.0
-PyMuPDF==2.1
-Pillow==13.0.0
-
-# Pipeline core (Layer 2)
+# Runtime (what the server and Docker image need)
 pydantic==2.14.3
 SQLAlchemy==2.1.8
+psycopg[binary]==3.3.9
 google-genai==3.2.0
 pdfplumber==0.11.10
 RapidFuzz==3.14.6
-pytest==9.2.0
-
-# API (Layer 3)
 fastapi==0.162.5
 uvicorn==0.54.0
 python-multipart==0.0.33
-httpx==0.28.1
