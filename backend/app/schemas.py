@@ -7,7 +7,7 @@ from decimal import Decimal
 from enum import StrEnum
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -76,19 +76,33 @@ STAGE_ORDER: list[Stage] = list(Stage)
 # ---------------------------------------------------------------------------
 
 
-class TextField(BaseModel):
+def _clamp_confidence(v: float) -> float:
+    """Models sometimes answer on a 0 to 100 scale or slightly outside 0 to 1. Bring it into 0 to 1."""
+    if v >= 2:  # clearly a percentage, e.g. 95
+        v = v / 100
+    return min(max(v, 0.0), 1.0)  # small overshoots like 1.05 become 1.0
+
+
+class _Confident(BaseModel):
+    @field_validator("confidence", mode="after", check_fields=False)
+    @classmethod
+    def _clamp(cls, v: float) -> float:
+        return _clamp_confidence(v)
+
+
+class TextField(_Confident):
     value: str | None = Field(description="The value, or null if it is not printed on the invoice.")
     confidence: float = Field(description="0 to 1. How sure you are the value is read correctly.")
     source_text: str | None = Field(description="The exact snippet on the page the value was read from.")
 
 
-class BoolField(BaseModel):
+class BoolField(_Confident):
     value: bool | None
     confidence: float
     source_text: str | None
 
 
-class ExtractedLine(BaseModel):
+class ExtractedLine(_Confident):
     description: str | None
     qty: str | None
     unit_price: str | None
@@ -96,7 +110,7 @@ class ExtractedLine(BaseModel):
     confidence: float
 
 
-class ExtractedTax(BaseModel):
+class ExtractedTax(_Confident):
     type: str | None = Field(description="CGST, SGST, IGST or other tax name.")
     rate: str | None = Field(description="Percentage as a number, e.g. '9' for 9%.")
     amount: str | None

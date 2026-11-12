@@ -41,6 +41,8 @@ response schema exactly as printed. Rules:
 """
 
 FixtureSource = Literal["fixture", "live"]
+REQUEST_TIMEOUT_MS = 180_000  # one call per invoice; never hang the pipeline forever
+RETRY_BASE_DELAY_S = 4.0
 
 
 class LLMError(Exception):
@@ -85,14 +87,15 @@ def _call_gemini(pdf_bytes: bytes, settings: Settings, max_attempts: int = 4) ->
 
     if not settings.gemini_api_key or not settings.gemini_model:
         raise LLMError("not_configured", "GEMINI_API_KEY and GEMINI_MODEL must be set for live extraction")
-    client = genai.Client(api_key=settings.gemini_api_key)
+    client = genai.Client(api_key=settings.gemini_api_key,
+                         http_options=types.HttpOptions(timeout=REQUEST_TIMEOUT_MS))
     config = types.GenerateContentConfig(
         response_mime_type="application/json",
         response_schema=Extraction,
         temperature=0,
     )
     contents = [types.Part.from_bytes(data=pdf_bytes, mime_type="application/pdf"), PROMPT]
-    delay = 4.0
+    delay = RETRY_BASE_DELAY_S
     for attempt in range(1, max_attempts + 1):
         try:
             response = client.models.generate_content(model=settings.gemini_model, contents=contents, config=config)
@@ -101,7 +104,7 @@ def _call_gemini(pdf_bytes: bytes, settings: Settings, max_attempts: int = 4) ->
             return Extraction.model_validate_json(response.text or "")
         except errors.APIError as exc:
             code = getattr(exc, "code", None)
-            retryable = code in (429, 500, 503)
+            retryable = code in (429, 500, 502, 503, 504)
             if not retryable or attempt == max_attempts:
                 if code == 429:
                     raise LLMError("rate_limited", "LLM rate limited, retry later") from exc
@@ -109,6 +112,9 @@ def _call_gemini(pdf_bytes: bytes, settings: Settings, max_attempts: int = 4) ->
         except ValidationError as exc:
             if attempt == max_attempts:
                 raise LLMError("failed", f"Gemini returned JSON that does not match the schema: {exc}") from exc
+        except Exception as exc:  # network errors, timeouts: retry, then fail cleanly
+            if attempt == max_attempts:
+                raise LLMError("failed", f"Could not reach Gemini: {type(exc).__name__}: {exc}") from exc
         time.sleep(delay)
         delay *= 2
     raise LLMError("failed", "Gemini extraction failed")  # unreachable

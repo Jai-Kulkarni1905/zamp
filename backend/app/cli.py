@@ -43,6 +43,8 @@ def _print_event(e: StageEventOut) -> None:
 
 
 def cmd_run(args: argparse.Namespace) -> int:
+    if args.force_extract and get_settings().llm_mode != "live":
+        sys.exit("--force-extract needs LLM_MODE=live (it makes a real Gemini call). Set it in .env or the shell.")
     Session = session_factory()
     with Session() as session:
         if not session.scalar(select(func.count()).select_from(Vendor)):

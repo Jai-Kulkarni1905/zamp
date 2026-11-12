@@ -132,10 +132,11 @@ class _Pipeline:
         try:
             ext = extract_invoice(pdf_bytes, self.state.ingest.file_hash, filename=self.run.filename,
                                   force=force, settings=settings)
-        except LLMError as err:
+        except Exception as exc:  # LLMError, or anything unexpected: fail the stage, never crash
+            err = exc if isinstance(exc, LLMError) else LLMError("failed", f"Extraction error: {exc}")
             res = extract_failed(err)
             self.emit(Stage.EXTRACT, res.status, res.message, started, _now(), res.payload)
-            raise _StageFailure(err.message) from err
+            raise _StageFailure(err.message) from exc
         res = extract_ok(ext)
         ended = _now()
         payload = {**res.payload, "duration_ms": int((ended - started).total_seconds() * 1000)}
@@ -243,6 +244,11 @@ def process_run(
         p.skip_rest(current, "Skipped: an earlier stage failed")
         run.status = RunStatus.ERROR
         run.error = str(exc)
+    except Exception as exc:  # outside any stage (DB, bookkeeping): still never leave a run RUNNING
+        session.rollback()
+        run = session.get(Run, run_id) or run
+        run.status = RunStatus.ERROR
+        run.error = f"Internal error: {exc}"
     run.duration_ms = int((time.perf_counter() - t0) * 1000)
     session.commit()
     return run
