@@ -1,4 +1,4 @@
-# Process map: AP Invoice Agent
+# Process map: Tally (AP invoice agent)
 
 A vendor invoice PDF goes in. A decision comes out (APPROVED, NEEDS_REVIEW or REJECTED) with
 the reasons and the next action for the AP team. Every stage is visible live in the UI.

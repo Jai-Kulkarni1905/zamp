@@ -1,8 +1,7 @@
-import { FlaskConical, LayoutDashboard, Radio, Search } from "lucide-react";
+import { LayoutDashboard, Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate, useSearchParams } from "react-router";
 import { api, DATA_CHANGED } from "../lib/api";
-import type { Health } from "../lib/types";
 import { useAutoRefresh } from "../lib/useAutoRefresh";
 import { cx } from "./ui/primitives";
 
@@ -69,12 +68,10 @@ function SearchBox() {
   );
 }
 
+export const BRAND = { name: "Tally", tagline: "Invoices Matched, hassle detached" } as const;
+
 export function TopBar() {
   const location = useLocation();
-  const [health, setHealth] = useState<Health | null>(null);
-  useEffect(() => {
-    api.health().then(setHealth, () => setHealth(null));
-  }, []);
   // The review badge refreshes on navigation and every 10s.
   const stats = useAutoRefresh(() => api.stats(), [location.pathname, location.search], { fast: true, fastMs: 10000 });
   const queue = stats.data?.review_queue ?? 0;
@@ -89,10 +86,10 @@ export function TopBar() {
     <header className="sticky top-0 z-30 border-b border-line bg-surface/95 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-[1440px] items-center gap-3 px-4 sm:gap-4 sm:px-6">
         <Link to="/" className="flex shrink-0 items-center gap-2.5">
-          <span className="grid size-8 place-items-center rounded-control bg-ink text-xs font-bold text-white">AP</span>
-          <span className="hidden leading-tight lg:block">
-            <span className="block text-base font-semibold text-ink">AP Invoice Agent</span>
-            <span className="block text-xs text-ink-3">Finance Ops</span>
+          <span className="grid size-8 place-items-center rounded-control bg-ink text-sm font-bold text-white">T</span>
+          <span className="hidden leading-tight sm:block">
+            <span className="block text-base font-semibold text-ink">{BRAND.name}</span>
+            <span className="hidden text-xs text-ink-3 lg:block">{BRAND.tagline}</span>
           </span>
         </Link>
 
@@ -121,18 +118,6 @@ export function TopBar() {
           <SearchBox />
         </div>
 
-        {health && (
-          <span
-            title={health.llm_mode === "live" ? "Gemini is called on a cache miss" : "Recorded extractions only, no Gemini calls"}
-            className={cx(
-              "hidden h-7 shrink-0 items-center gap-1.5 rounded-full border px-2.5 text-xs font-medium sm:inline-flex",
-              health.llm_mode === "live" ? "border-accent-200 bg-accent-50 text-accent-700" : "border-line bg-sunken text-ink-2",
-            )}
-          >
-            {health.llm_mode === "live" ? <Radio className="size-3.5" aria-hidden /> : <FlaskConical className="size-3.5" aria-hidden />}
-            {health.llm_mode === "live" ? "Live Gemini" : "Fixture mode"}
-          </span>
-        )}
       </div>
     </header>
   );

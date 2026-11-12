@@ -8,7 +8,7 @@ first, and EC-2 needs HP-1 approved first (PLAN.md section 7).
 1. Open the app URL. If it is asleep, the first load takes about a minute.
 2. Reset to an empty dashboard:
    `curl -X POST https://<app>/api/admin/reset -H "X-Admin-Token: <token>"`
-3. Check the dashboard shows 0 runs, the badge reads **Live Gemini**, and the review queue is empty.
+3. Check the dashboard shows 0 runs and the review queue is empty.
 4. Have the 8 PDFs from `data/invoices/` in one folder, ready to drag.
 5. **On a phone (mobile data)**: open the URL and wait a full minute before giving up (the free plan may be
    asleep). If it still will not load, Indian carriers sometimes block hosting domains: set Private DNS to

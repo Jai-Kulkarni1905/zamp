@@ -38,7 +38,7 @@ def create_app(settings: Settings | None = None, engine: Engine | None = None) -
         yield
         worker.stop()
 
-    app = FastAPI(title="AP Invoice Agent", version="0.3.0", lifespan=lifespan)
+    app = FastAPI(title="Tally", version="1.0.0", lifespan=lifespan)
     app.state.settings = settings
     app.state.sessions = sessions
     app.state.bus = bus

@@ -1,6 +1,6 @@
 # Assumptions
 
-Every assumption the AP Invoice Agent relies on. Each one has an ID (A1, A2, ...) so code, tests
+Every assumption Tally (the AP invoice agent) relies on. Each one has an ID (A1, A2, ...) so code, tests
 and the interview can point to it. Rule IDs refer to `docs/process-map.md`.
 
 If a number here changes, change it in `backend/app/config.py` (or the rules module) and here,

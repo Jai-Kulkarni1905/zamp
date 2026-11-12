@@ -4,6 +4,7 @@ Repeats for --rounds (default 2). Exits non-zero on any error or mismatch.
 
 Usage:
     python scripts/rehearse.py --base-url http://127.0.0.1:8000
+    python scripts/rehearse.py --base-url https://... --only HP-1 --rounds 1    reset, then preload HP-1 only
     python scripts/rehearse.py --base-url https://your-app.onrender.com --admin-token <token>
 The admin token can also come from the ADMIN_TOKEN environment variable. It is never printed.
 """
@@ -61,7 +62,8 @@ def follow(client: httpx.Client, run_id: str) -> tuple[dict[str, object], int]:
     raise RuntimeError("stream closed without an end event")
 
 
-def one_round(client: httpx.Client, invoices: list[dict[str, object]], token: str | None, n: int) -> int:
+def one_round(client: httpx.Client, invoices: list[dict[str, object]], token: str | None, n: int,
+              full: bool = True) -> int:
     headers = {"X-Admin-Token": token} if token else {}
     reset = client.post("/api/admin/reset", headers=headers, timeout=60)
     if reset.status_code != 200:
@@ -91,6 +93,10 @@ def one_round(client: httpx.Client, invoices: list[dict[str, object]], token: st
               f"{'PASS' if ok else 'FAIL'}{note}")
 
     stats = client.get("/api/stats").json()
+    if not full:  # a subset (e.g. video prep) cannot match the full-run dashboard numbers
+        print(f"  Dashboard: {stats['runs_done']} run(s), review queue {stats['review_queue']}, "
+              f"value {stats['value_processed']}")
+        return problems
     for key, want_value in EXPECTED_STATS.items():
         if str(stats[key]) != str(want_value):
             problems += 1
@@ -110,17 +116,24 @@ def main() -> None:
     parser.add_argument("--base-url", required=True)
     parser.add_argument("--admin-token", default=os.environ.get("ADMIN_TOKEN"))
     parser.add_argument("--rounds", type=int, default=2)
+    parser.add_argument("--only", nargs="+", metavar="ID", help="run only these invoices, e.g. HP-1 (still resets first)")
     args = parser.parse_args()
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
 
     manifest = json.loads((INVOICES / "manifest.json").read_text(encoding="utf-8"))
     invoices = sorted(manifest["invoices"], key=lambda i: i["run_order"])
+    if args.only:
+        unknown = set(args.only) - {str(i["id"]) for i in invoices}
+        if unknown:
+            sys.exit(f"Unknown invoice id(s): {sorted(unknown)}")
+        invoices = [i for i in invoices if i["id"] in args.only]
     with httpx.Client(base_url=args.base_url.rstrip("/"), follow_redirects=True) as client:
         waited = wait_until_up(client)
         health = client.get("/api/health").json()
         print(f"{args.base_url} is up (waited {waited:.0f}s), LLM_MODE={health['llm_mode']}")
-        total = sum(one_round(client, invoices, args.admin_token, n) for n in range(1, args.rounds + 1))
+        full = not args.only
+        total = sum(one_round(client, invoices, args.admin_token, n, full) for n in range(1, args.rounds + 1))
     print(f"\n{'ZERO ERRORS' if total == 0 else f'{total} PROBLEM(S)'} across {args.rounds} round(s)")
     sys.exit(1 if total else 0)
 
