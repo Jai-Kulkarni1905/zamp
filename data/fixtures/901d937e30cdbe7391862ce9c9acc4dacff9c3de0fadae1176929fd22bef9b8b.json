@@ -1,0 +1,92 @@
+{
+  "file_hash": "901d937e30cdbe7391862ce9c9acc4dacff9c3de0fadae1176929fd22bef9b8b",
+  "filename": "HP-3.pdf",
+  "model": "gemini-3.6-flash",
+  "recorded_at": "2026-11-12T16:27:31+00:00",
+  "extraction": {
+    "vendor_name": {
+      "value": "Nilgiri Packaging Solutions LLP",
+      "confidence": 0.98,
+      "source_text": "Nilgiri Packaging Solutions LLP"
+    },
+    "vendor_gstin": {
+      "value": "33AAQFN7392H1ZK",
+      "confidence": 0.98,
+      "source_text": "33AAQFN7392H1ZK"
+    },
+    "invoice_number": {
+      "value": "NPS/26-27/0904",
+      "confidence": 0.98,
+      "source_text": "NPS/26-27/0904"
+    },
+    "invoice_date": {
+      "value": "2026-11-09",
+      "confidence": 0.98,
+      "source_text": "09 November 2026"
+    },
+    "due_date": {
+      "value": "2026-12-09",
+      "confidence": 0.98,
+      "source_text": "09 December 2026"
+    },
+    "po_reference": {
+      "value": "PO-2026-0108",
+      "confidence": 0.98,
+      "source_text": "PO-2026-0108"
+    },
+    "currency": {
+      "value": "INR",
+      "confidence": 0.98,
+      "source_text": "Rs."
+    },
+    "line_items": [
+      {
+        "description": "Bubble wrap roll 1 m x 100 m",
+        "qty": "50",
+        "unit_price": "1200.00",
+        "amount": "60000.00",
+        "confidence": 0.98
+      },
+      {
+        "description": "BOPP packing tape 48 mm (box of 72)",
+        "qty": "20",
+        "unit_price": "1850.00",
+        "amount": "37000.00",
+        "confidence": 0.98
+      }
+    ],
+    "subtotal": {
+      "value": "97000.00",
+      "confidence": 0.98,
+      "source_text": "97,000.00"
+    },
+    "taxes": [
+      {
+        "type": "IGST",
+        "rate": "18",
+        "amount": "17460.00",
+        "confidence": 0.98
+      }
+    ],
+    "tax_inclusive": {
+      "value": false,
+      "confidence": 0.95,
+      "source_text": null
+    },
+    "total": {
+      "value": "114460.00",
+      "confidence": 0.98,
+      "source_text": "1,14,460.00"
+    },
+    "bank_account": {
+      "value": "917020045612398",
+      "confidence": 0.98,
+      "source_text": "917020045612398"
+    },
+    "ifsc": {
+      "value": "UTIB0002871",
+      "confidence": 0.98,
+      "source_text": "UTIB0002871"
+    }
+  }
+}

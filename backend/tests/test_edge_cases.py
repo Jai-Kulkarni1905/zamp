@@ -176,3 +176,34 @@ def test_section_7_reproduces_exactly_in_demo_order(session: Session, real: Sett
         if name == "HP-2":
             assert "Within tolerance" in " ".join(r.explanation_json["why"])
     assert got == SECTION_7
+
+
+# -- HP-3: invoice for a PO created in the app (A66, A67) -----------------------------------------
+
+
+def test_hp3_needs_the_po_created_in_the_app(session: Session, real: Settings) -> None:
+    from datetime import date
+
+    from app.api_schemas import POCreate
+    from app.purchase_orders import create_purchase_order
+
+    from app.pipeline.stages.ingest import sha256
+    from app.llm.gemini import fixture_path
+
+    assert fixture_path(sha256((INVOICES / "HP-3.pdf").read_bytes()), real).exists()
+    before = run(session, real, "HP-3")
+    assert before.decision == "NEEDS_REVIEW" and rules_of(before)["PO-EXPLICIT"][0] == "FAIL"
+
+    body = POCreate(vendor_id="V002", issue_date=date(2026, 11, 7), total_amount="114460.00", lines=[
+        {"description": "Bubble wrap roll 1 m x 100 m", "hsn_sac": "3923", "qty": "50", "unit": "Rolls",
+         "unit_price": "1200"},
+        {"description": "BOPP packing tape 48 mm (box of 72)", "hsn_sac": "3919", "qty": "20", "unit": "Boxes",
+         "unit_price": "1850"},
+    ])
+    assert create_purchase_order(session, body, date(2026, 11, 12)) == "PO-2026-0108"
+    # A second, fresh HP-3 run would be a duplicate of the first, so start from a clean runs table.
+    from app.seed import wipe_runs
+    wipe_runs(session)
+    after = run(session, real, "HP-3")
+    assert (after.decision, after.flags, after.matched_po) == ("APPROVED", [], "PO-2026-0108")
+    assert repo.consumed_by_po(session)["PO-2026-0108"] == Decimal("114460.00")
