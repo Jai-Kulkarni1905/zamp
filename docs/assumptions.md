@@ -264,3 +264,38 @@ PO but the vendor did not match, PO-EXPLICIT is a SOFT fail and the amount check
 **A46. PO inference needs the invoice total.** Without a total the balance fit is 0, so the score
 can reach at most 0.40 and no PO is inferred (SOFT fail). The missing total is already
 VAL-REQUIRED.
+
+## API (Layer 3)
+
+**A47. Runs are processed one at a time, in upload order.** Duplicate checks and PO balances
+depend on earlier runs. If two runs were decided in parallel, both could see the same remaining
+PO balance and both be approved. A single worker thread processes the queue; uploads wait as
+QUEUED. On restart, QUEUED runs are re-queued and runs that were mid-way (RUNNING) are marked
+ERROR with "upload the file again". At one Gemini call per invoice this is not a bottleneck.
+
+**A48. A human override is final and requires a note.** `POST /api/runs/{id}/review` takes
+APPROVE or REJECT plus a non-blank note, is allowed only on DONE runs, and can be made once. The
+automated decision is never changed; the override, note and time are stored next to it. A second
+override returns 409, so the audit trail cannot be silently rewritten.
+
+**A49. Uploads must be PDFs of at most 15 MB.** The file must contain the `%PDF-` header in its
+first 1 KB. Anything else is rejected with 400 (not a PDF) or 413 (too large) before a run is
+created.
+
+**A50. The run list is filtered in the app, not in SQL, for flags, dates and search.** Flags are
+a JSON list, dates are compared as IST calendar days, and search covers filename, invoice number,
+vendor name and PO. At demo scale (tens of runs) this is instant; at production scale these would
+move into indexed SQL.
+
+**A51. "Value processed" is the sum of invoice totals of DONE runs; "value approved" uses the
+effective decision (after overrides).** The approval rate uses the automated decision, since it
+measures the agent, not the reviewers. The review queue counts NEEDS_REVIEW runs with no reviewer
+action yet.
+
+**A52. `STAGE_DELAY_MS` only paces events for demos.** It pauses after each stage's final event
+so the live view visibly steps through the stages in fixture mode. Default 0; it never changes a
+result.
+
+**A53. On Windows, call the API at 127.0.0.1, not localhost.** `localhost` tries IPv6 (`::1`)
+first and waits about 2 seconds before falling back to IPv4, which delays the first SSE events.
+The Vite dev proxy (Layer 4) targets `http://127.0.0.1:8000`.

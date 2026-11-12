@@ -44,6 +44,9 @@ class Settings:
     fixtures_dir: Path
     uploads_dir: Path
     seed_dir: Path
+    stage_delay_ms: int = 0
+    admin_token: str | None = None
+    cors_origins: tuple[str, ...] = ("http://localhost:5173", "http://127.0.0.1:5173")
 
     def today(self) -> date:
         """Processing date for date rules (A3): AS_OF_DATE if set, else today in IST."""
@@ -71,7 +74,14 @@ def get_settings() -> Settings:
         fixtures_dir=ROOT / "data" / "fixtures",
         uploads_dir=ROOT / "data" / "uploads",
         seed_dir=ROOT / "data" / "seed",
+        stage_delay_ms=int(_env("STAGE_DELAY_MS") or 0),
+        admin_token=_env("ADMIN_TOKEN"),
+        cors_origins=tuple(o.strip() for o in (_env("CORS_ORIGINS") or
+                                               "http://localhost:5173,http://127.0.0.1:5173").split(",") if o.strip()),
     )
+
+
+MAX_UPLOAD_BYTES = 15 * 1024 * 1024  # A49
 
 
 # ---------------------------------------------------------------------------

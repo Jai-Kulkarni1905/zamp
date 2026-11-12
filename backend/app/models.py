@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from decimal import Decimal
 from typing import Any
 
@@ -20,6 +20,23 @@ class Money(TypeDecorator[Decimal]):
 
     def process_result_value(self, value: str | None, dialect: Dialect) -> Decimal | None:
         return None if value is None else Decimal(value)
+
+
+class UTCDateTime(TypeDecorator[datetime]):
+    """Timezone-aware UTC datetimes on every backend. SQLite drops tzinfo, so it is restored on read."""
+
+    impl = DateTime(timezone=True)
+    cache_ok = True
+
+    def process_bind_param(self, value: datetime | None, dialect: Dialect) -> datetime | None:
+        if value is not None and value.tzinfo is not None:
+            value = value.astimezone(timezone.utc)
+        return value
+
+    def process_result_value(self, value: datetime | None, dialect: Dialect) -> datetime | None:
+        if value is not None and value.tzinfo is None:
+            value = value.replace(tzinfo=timezone.utc)
+        return value
 
 
 class Base(DeclarativeBase):
@@ -85,11 +102,11 @@ class Run(Base):
     invoice_date: Mapped[date | None] = mapped_column(Date)
     total: Mapped[Decimal | None] = mapped_column(Money)
     error: Mapped[str | None] = mapped_column(Text)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime)
     duration_ms: Mapped[int | None] = mapped_column(Integer)
     reviewer_action: Mapped[str | None] = mapped_column(String(16))  # APPROVE / REJECT
     reviewer_note: Mapped[str | None] = mapped_column(Text)
-    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    reviewed_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
 
     events: Mapped[list[StageEvent]] = relationship(order_by="StageEvent.seq", cascade="all, delete-orphan")
     rules: Mapped[list[RuleResultRow]] = relationship(order_by="RuleResultRow.id", cascade="all, delete-orphan")
@@ -112,8 +129,8 @@ class StageEvent(Base):
     stage: Mapped[str] = mapped_column(String(16))
     status: Mapped[str] = mapped_column(String(16))
     message: Mapped[str] = mapped_column(Text)
-    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    started_at: Mapped[datetime] = mapped_column(UTCDateTime)
+    ended_at: Mapped[datetime | None] = mapped_column(UTCDateTime)
     payload_json: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
 
 

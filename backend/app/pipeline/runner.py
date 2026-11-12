@@ -77,18 +77,21 @@ class _State:
 
 
 class _Pipeline:
-    def __init__(self, session: Session, bus: EventBus, run: Run) -> None:
+    def __init__(self, session: Session, bus: EventBus, run: Run, stage_delay_ms: int = 0) -> None:
         self.session = session
         self.bus = bus
         self.run = run
         self.seq = 0
         self.state = _State()
+        self.stage_delay_s = stage_delay_ms / 1000
 
     def emit(self, stage: Stage, status: StageStatus, message: str, started: datetime,
              ended: datetime | None, payload: dict[str, object] | None = None) -> None:
         self.seq += 1
         record_event(self.session, self.bus, run_id=self.run.id, seq=self.seq, stage=stage, status=status,
                      message=message, started_at=started, ended_at=ended, payload=payload)
+        if status not in (StageStatus.RUNNING, StageStatus.SKIPPED) and self.stage_delay_s:
+            time.sleep(self.stage_delay_s)  # STAGE_DELAY_MS: demo pacing only, never changes results
 
     def stage(self, stage: Stage, fn: Callable[[], StageResult]) -> StageResult:
         started = _now()
@@ -220,7 +223,7 @@ def process_run(
     pdf_bytes = Path(run.file_path).read_bytes()
     run.status = RunStatus.RUNNING
     session.commit()
-    p = _Pipeline(session, bus, run)
+    p = _Pipeline(session, bus, run, settings.stage_delay_ms)
     t0 = time.perf_counter()
 
     steps: list[tuple[Stage, Callable[[], StageResult | None]]] = [
@@ -247,6 +250,10 @@ def process_run(
     except Exception as exc:  # outside any stage (DB, bookkeeping): still never leave a run RUNNING
         session.rollback()
         run = session.get(Run, run_id) or run
+        try:
+            p.skip_rest(current, "Skipped: internal error")
+        except Exception:  # noqa: BLE001 - best effort; the run status below is what matters
+            session.rollback()
         run.status = RunStatus.ERROR
         run.error = f"Internal error: {exc}"
     run.duration_ms = int((time.perf_counter() - t0) * 1000)

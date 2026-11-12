@@ -1,0 +1,53 @@
+"""App factory. Tests call create_app() with their own settings and engine; app/main.py builds the real one."""
+
+from __future__ import annotations
+
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import Engine, func, select
+
+from app.config import Settings, get_settings
+from app.db import make_engine, session_factory
+from app.models import Base, Vendor
+from app.pipeline.events import EventBus
+from app.routes import admin, pos, runs, stats, vendors
+from app.seed import seed_master_data
+from app.worker import RunWorker
+
+
+def create_app(settings: Settings | None = None, engine: Engine | None = None) -> FastAPI:
+    settings = settings or get_settings()
+    engine = engine or make_engine(settings.database_url)
+    Base.metadata.create_all(engine)
+    sessions = session_factory(engine)
+    bus = EventBus()
+    worker = RunWorker(sessions, bus, settings)
+
+    @asynccontextmanager
+    async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+        with sessions() as s:
+            if not s.scalar(select(func.count()).select_from(Vendor)):
+                seed_master_data(s, settings.seed_dir)
+        worker.recover()
+        worker.start()
+        yield
+        worker.stop()
+
+    app = FastAPI(title="AP Invoice Agent", version="0.3.0", lifespan=lifespan)
+    app.state.settings = settings
+    app.state.sessions = sessions
+    app.state.bus = bus
+    app.state.worker = worker
+    app.add_middleware(CORSMiddleware, allow_origins=list(settings.cors_origins), allow_methods=["*"],
+                       allow_headers=["*"], expose_headers=["Content-Disposition"])
+    for module in (runs, pos, vendors, stats, admin):
+        app.include_router(module.router)
+
+    @app.get("/api/health", tags=["meta"])
+    def health() -> dict[str, object]:
+        return {"ok": True, "llm_mode": settings.llm_mode, "worker_busy": worker.busy}
+
+    return app
