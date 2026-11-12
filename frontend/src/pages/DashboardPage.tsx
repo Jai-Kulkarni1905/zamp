@@ -128,6 +128,18 @@ export function DashboardPage() {
             Drop in a vendor invoice and Tally checks it against your vendors and purchase orders, catches duplicates
             and risky bank changes, and tells your team exactly what to do next.
           </p>
+          {/* Always visible, so raising a PO does not depend on finding the Purchase orders tab first. */}
+          <Button
+            variant="neutral"
+            icon={Plus}
+            className="mt-3"
+            onClick={() => {
+              update({ tab: "pos" });
+              setNewPO(true);
+            }}
+          >
+            New purchase order
+          </Button>
         </div>
         <Dropzone compact />
       </div>
