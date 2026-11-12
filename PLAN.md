@@ -206,7 +206,7 @@ Do ONE layer per Claude Code session. Each layer ends with its acceptance check 
 ## 11. Status (Claude Code updates this after each layer)
 
 - [x] Layer 0
-- [ ] Layer 1
+- [x] Layer 1
 - [ ] Layer 2
 - [ ] Layer 3
 - [ ] Layer 4

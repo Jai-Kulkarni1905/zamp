@@ -1,0 +1,7 @@
+vendor_id,legal_name,aliases,gstin,status,bank_account,ifsc,email,phone,address,state
+V001,Shakti Industrial Supplies Pvt Ltd,Shakti Industrial|Shakti Industrial Supplies|SISPL,27AAKCS4821M1Z5,APPROVED,50200012345678,HDFC0001234,accounts@shaktiindustrial.example,+91 22 4012 7788,"Plot 14, MIDC Industrial Area, Andheri East, Mumbai 400093",Maharashtra
+V002,Nilgiri Packaging Solutions LLP,Nilgiri Packaging|Nilgiri Pack|NPS LLP,33AAQFN7392H1ZK,APPROVED,917020045612398,UTIB0002871,billing@nilgiripack.example,+91 44 2654 3301,"No. 22, SIDCO Industrial Estate, Ambattur, Chennai 600098",Tamil Nadu
+V003,Vardhan Steel Fabricators Pvt Ltd,Vardhan Steel|Vardhan Fabricators|VSF,24AAECV5163P1Z2,APPROVED,34567812901,SBIN0004512,finance@vardhansteel.example,+91 79 2589 4410,"Survey 118, GIDC Phase 2, Vatva, Ahmedabad 382445",Gujarat
+V004,Kaveri Office Essentials,Kaveri Office|Kaveri Stationers,29BQKPK2847R1ZX,APPROVED,0412101034567,CNRB0000412,kaveri.office@example.com,+91 80 2334 9182,"18, 2nd Cross, Gandhinagar, Bengaluru 560009",Karnataka
+V005,Brightline IT Services Pvt Ltd,Brightline IT|Brightline Services|BITS,36AAHCB9054L1Z8,APPROVED,178805001234,ICIC0001788,ar@brightlineit.example,+91 40 6712 5500,"5th Floor, Cyber Pearl, HITEC City, Hyderabad 500081",Telangana
+V006,Apex Chemicals Trading Co,Apex Chemicals|Apex Chem Trading,07AAOFA3318D1ZQ,BLOCKED,2111234567,KKBK0000211,sales@apexchem.example,+91 11 4567 2290,"B-41, Okhla Industrial Area Phase 1, New Delhi 110020",Delhi

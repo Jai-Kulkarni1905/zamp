@@ -202,7 +202,33 @@ decision.
 
 ## Test data
 
-**A32. Test invoice dates are relative to the generation date** so the 180 day rule never makes
-them stale. Regenerate the PDFs if the demo is more than a few months after generation.
+**A32. Test invoice dates are relative to a fixed anchor date, not today.** The anchor is
+`--as-of` in `scripts/generate_invoices.py` (default 2026-11-12). Together with reportlab's
+invariant mode and seeded scan noise, this makes the PDFs byte-for-byte identical on every run,
+so file hashes and cached Gemini fixtures stay valid. If the demo is close to 180 days after the
+anchor, regenerate with a newer `--as-of` and re-record fixtures.
 
 **A33. Test vendors and companies are fictional.** GSTINs follow the format (A5) but are made up.
+IFSC prefixes use real bank codes so the bank names look right; branch codes and account numbers
+are invented. Emails use the reserved `.example` domain.
+
+**A34. PO total is the cap including GST.** `purchase_orders.csv` `total_amount` is what the
+invoice total is compared against (A23). PO line `unit_price` excludes GST. The sum of lines plus
+18% GST matches the total to within a paisa or two (PO-2026-0103 is milestone billing whose lines
+work out to ₹3,00,000.01 against a cap of ₹3,00,000.00).
+
+**A35. PO lines live in `data/seed/purchase_order_lines.csv`,** one row per line, keyed by
+po_number. Nesting lines inside `purchase_orders.csv` would make the CSV awkward to read and edit.
+
+**A36. Unit price comparison on tax-inclusive invoices.** When `tax_inclusive` is true, the invoice
+unit price is divided by (1 + GST rate) before comparing with the PO unit price (extends A24).
+
+**A37. Invoice PDFs write "Rs." or "INR", not ₹.** Reportlab's built-in fonts have no ₹ glyph,
+and real Indian invoices use both forms, which also exercises extraction. The UI always shows ₹.
+
+**A38. Grand totals are rounded to the nearest rupee with a "Round off" line,** as most Indian
+invoices do. The round off is at most ₹0.50, so it stays inside the ±₹1 arithmetic tolerance
+(A14).
+
+**A39. Vendor master has extra columns:** `phone` (the "number on file" that EC-4's next action
+refers to), `address` and `state` (to choose CGST+SGST or IGST against the buyer's state).

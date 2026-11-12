@@ -1,0 +1,182 @@
+{
+  "as_of": "2026-11-12",
+  "invoices": [
+    {
+      "run_order": 1,
+      "id": "HP-1",
+      "file": "HP-1.pdf",
+      "sha256": "3d6ea9ff18e924677a6d1d7e178e0d737563ca4b7548eb2c9e4f22671206b363",
+      "template": "classic",
+      "vendor_id": "V001",
+      "invoice_number": "INV-2026-142",
+      "invoice_date": "2026-10-23",
+      "po_reference": "PO-2026-0101",
+      "tax_inclusive": false,
+      "taxable": "150000.00",
+      "total": "177000.00",
+      "bank_account": "50200012345678",
+      "ifsc": "HDFC0001234",
+      "expected": {
+        "decision": "APPROVED",
+        "flags": []
+      }
+    },
+    {
+      "run_order": 2,
+      "id": "HP-2",
+      "file": "HP-2.pdf",
+      "sha256": "0be7b88c7b3dc77c9d8d8e9913a463315e0a10db4ecb8920711a989279fdcfff",
+      "template": "modern",
+      "vendor_id": "V002",
+      "invoice_number": "NPS/26-27/0871",
+      "invoice_date": "2026-10-31",
+      "po_reference": "PO-2026-0102",
+      "tax_inclusive": true,
+      "taxable": "172550.85",
+      "total": "203610.00",
+      "bank_account": "917020045612398",
+      "ifsc": "UTIB0002871",
+      "expected": {
+        "decision": "APPROVED",
+        "flags": [],
+        "note": "1.5% over PO, within tolerance"
+      }
+    },
+    {
+      "run_order": 3,
+      "id": "EC-1-A",
+      "file": "EC-1-A.pdf",
+      "sha256": "f618c825ea58adb0239145f0fe0e59ac073ab4d5375b00afffcbccc441961316",
+      "template": "compact",
+      "vendor_id": "V003",
+      "invoice_number": "VSF/2627/0311",
+      "invoice_date": "2026-10-03",
+      "po_reference": "PO-2026-0103",
+      "tax_inclusive": false,
+      "taxable": "101694.92",
+      "total": "120000.00",
+      "bank_account": "34567812901",
+      "ifsc": "SBIN0004512",
+      "expected": {
+        "decision": "APPROVED",
+        "flags": []
+      }
+    },
+    {
+      "run_order": 4,
+      "id": "EC-1-B",
+      "file": "EC-1-B.pdf",
+      "sha256": "3ecb727f14598a2b11673065de487f5650c95a99e51bbcd7e7a6ca4043fa828f",
+      "template": "compact",
+      "vendor_id": "V003",
+      "invoice_number": "VSF/2627/0347",
+      "invoice_date": "2026-10-18",
+      "po_reference": "PO-2026-0103",
+      "tax_inclusive": false,
+      "taxable": "101694.92",
+      "total": "120000.00",
+      "bank_account": "34567812901",
+      "ifsc": "SBIN0004512",
+      "expected": {
+        "decision": "APPROVED",
+        "flags": []
+      }
+    },
+    {
+      "run_order": 5,
+      "id": "EC-1-C",
+      "file": "EC-1-C.pdf",
+      "sha256": "1093284dc7d9b43839a0a0a17dded2a490fb335565640c31395037635c33b16b",
+      "template": "compact",
+      "vendor_id": "V003",
+      "invoice_number": "VSF/2627/0389",
+      "invoice_date": "2026-11-07",
+      "po_reference": "PO-2026-0103",
+      "tax_inclusive": false,
+      "taxable": "76271.19",
+      "total": "90000.00",
+      "bank_account": "34567812901",
+      "ifsc": "SBIN0004512",
+      "expected": {
+        "decision": "NEEDS_REVIEW",
+        "flags": [
+          "OVER_PO"
+        ],
+        "note": "exceeds remaining Rs 60,000 by Rs 30,000"
+      }
+    },
+    {
+      "run_order": 6,
+      "id": "EC-2",
+      "file": "EC-2.pdf",
+      "sha256": "2de83185cbac322fad239567e323f5d5e75a2e8dd7a9c8ec534876ff515396d3",
+      "template": "modern",
+      "vendor_id": "V001",
+      "invoice_number": "INV/2026/0142",
+      "invoice_date": "2026-10-23",
+      "po_reference": "PO-2026-0101",
+      "tax_inclusive": false,
+      "taxable": "150000.00",
+      "total": "177000.00",
+      "bank_account": "50200012345678",
+      "ifsc": "HDFC0001234",
+      "expected": {
+        "decision": "REJECTED",
+        "flags": [
+          "DUPLICATE"
+        ],
+        "duplicate_of": "HP-1"
+      }
+    },
+    {
+      "run_order": 7,
+      "id": "EC-3",
+      "file": "EC-3.pdf",
+      "sha256": "e6c291232fa7d6b91f15bbfc9f5342deeb1406682d233bb509aa05f122901a9c",
+      "template": "scanned",
+      "vendor_id": "V004",
+      "invoice_number": null,
+      "invoice_date": "2026-11-04",
+      "po_reference": null,
+      "tax_inclusive": false,
+      "taxable": "90000.00",
+      "total": "106200.00",
+      "bank_account": "0412101034567",
+      "ifsc": "CNRB0000412",
+      "expected": {
+        "decision": "NEEDS_REVIEW",
+        "flags": [
+          "LOW_CONFIDENCE",
+          "PO_INFERRED"
+        ],
+        "inferred_po": "PO-2026-0104",
+        "missing": [
+          "invoice_number",
+          "po_reference"
+        ]
+      }
+    },
+    {
+      "run_order": 8,
+      "id": "EC-4",
+      "file": "EC-4.pdf",
+      "sha256": "fd390eb0bbb7a8f1e246889b1737508fa55969f769dbae0fac41cace42c47a93",
+      "template": "modern",
+      "vendor_id": "V005",
+      "invoice_number": "BITS/INV/2026/1187",
+      "invoice_date": "2026-11-02",
+      "po_reference": "PO-2026-0106",
+      "tax_inclusive": false,
+      "taxable": "100000.00",
+      "total": "118000.00",
+      "bank_account": "045661900002345",
+      "ifsc": "YESB0000456",
+      "expected": {
+        "decision": "NEEDS_REVIEW",
+        "flags": [
+          "FRAUD_RISK"
+        ]
+      }
+    }
+  ]
+}
