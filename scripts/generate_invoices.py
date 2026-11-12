@@ -278,7 +278,26 @@ def build_scenarios(as_of: date) -> list[Invoice]:
             bank_account="045661900002345", ifsc="YESB0000456",
             note="Please note: we have changed our bank. Kindly remit all payments to the new "
                  "account shown in the payment details above, with immediate effect."),
+        # HP-3 bills a PO that is NOT in the seed data: it is created in the app first (A66, A67).
+        inv("HP-3", "modern", "V002", "NPS/26-27/0904", 3, HP3_PO["po_number"], HP3_LINES,
+            {"decision": "APPROVED", "flags": [], "requires_po": HP3_PO}),
     ]
+
+
+# The PO that HP-3 bills. It is typed into the "New purchase order" form (or created by the demo tools)
+# before HP-3 is uploaded; with the 7 seeded POs the auto-assigned number is PO-2026-0108.
+HP3_LINES = [
+    Line("Bubble wrap roll 1 m x 100 m", "3923", Decimal("50"), "Rolls", Decimal("1200.00")),
+    Line("BOPP packing tape 48 mm (box of 72)", "3919", Decimal("20"), "Boxes", Decimal("1850.00")),
+]
+HP3_PO: dict[str, object] = {
+    "po_number": "PO-2026-0108",
+    "vendor_id": "V002",
+    "issue_date_days_ago": 5,
+    "total_amount": "114460.00",  # 97,000.00 lines + 18% IGST 17,460.00
+    "lines": [{"description": l.description, "hsn_sac": l.hsn, "qty": str(l.qty), "unit": l.unit,
+               "unit_price": str(l.rate)} for l in HP3_LINES],
+}
 
 
 # ---------------------------------------------------------------------------

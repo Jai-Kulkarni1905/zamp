@@ -146,3 +146,35 @@ export const DECISION_LABELS: Record<string, string> = {
   NEEDS_REVIEW: "Needs review",
   REJECTED: "Rejected",
 };
+
+// -- Exact decimal arithmetic for form previews (no floats) -------------------------
+
+const DEC = /^\d+(\.\d+)?$/;
+
+/** "1,200.5" -> "1200.5"; null if not a positive-or-zero decimal number. */
+export function cleanDecimal(input: string): string | null {
+  const v = input.replace(/[,\s₹]/g, "");
+  return DEC.test(v) ? v : null;
+}
+
+function toScaled(v: string, scale: number): bigint {
+  const [i = "0", f = ""] = v.split(".");
+  return BigInt(i + (f + "0".repeat(scale)).slice(0, scale));
+}
+
+function fromScaled(n: bigint, scale: number): string {
+  const neg = n < 0n;
+  const s = (neg ? -n : n).toString().padStart(scale + 1, "0");
+  return `${neg ? "-" : ""}${s.slice(0, -scale)}.${s.slice(-scale)}`;
+}
+
+/** qty x price rounded half-up to 2 decimals, as a decimal string. */
+export function mulMoney(qty: string, price: string): string {
+  const prod = toScaled(qty, 3) * toScaled(price, 2); // scale 5
+  const rounded = (prod + 500n) / 1000n; // to scale 2, half-up (inputs are non-negative)
+  return fromScaled(rounded, 2);
+}
+
+export function addMoney(values: string[]): string {
+  return fromScaled(values.reduce((acc, v) => acc + toScaled(v, 2), 0n), 2);
+}

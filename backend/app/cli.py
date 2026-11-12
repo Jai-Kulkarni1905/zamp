@@ -12,6 +12,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 from sqlalchemy import func, select
 
@@ -117,6 +118,18 @@ def cmd_record(args: argparse.Namespace) -> int:
     return 1 if failures else 0
 
 
+def _create_demo_po(session: Any, needs: dict[str, Any], as_of: str) -> str:
+    from datetime import date, timedelta
+
+    from app.api_schemas import POCreate
+    from app.purchase_orders import create_purchase_order
+
+    issue = date.fromisoformat(as_of) - timedelta(days=int(needs["issue_date_days_ago"]))
+    body = POCreate(vendor_id=needs["vendor_id"], issue_date=issue, total_amount=needs["total_amount"],
+                    lines=needs["lines"])
+    return create_purchase_order(session, body, get_settings().today())
+
+
 def cmd_demo(_: argparse.Namespace) -> int:
     """Fresh reset, then every test invoice in demo order (manifest run_order), vs PLAN.md section 7."""
     manifest = json.loads((ROOT / "data" / "invoices" / "manifest.json").read_text(encoding="utf-8"))
@@ -130,6 +143,13 @@ def cmd_demo(_: argparse.Namespace) -> int:
         print(f"Fresh reset. Running {len(invoices)} invoices in demo order.\n")
         print(f"  {'#':<2} {'ID':<7} {'Expected':<34} {'Actual':<34} Result")
         for inv in invoices:
+            needs = inv["expected"].get("requires_po")
+            if needs:  # create the PO this invoice bills, the way a user would in the app (A67)
+                number = _create_demo_po(session, needs, manifest["as_of"])
+                ok_po = number == needs["po_number"]
+                failures += not ok_po
+                print(f"  {'':<2} {'PO':<7} created {number:<25} {'expected ' + needs['po_number']:<34} "
+                      f"{'PASS' if ok_po else 'FAIL'}")
             path = ROOT / "data" / "invoices" / inv["file"]
             run = process_run(session, create_run(session, path.name, path.read_bytes()).id, bus=bus)
             want = (inv["expected"]["decision"], set(inv["expected"]["flags"]))

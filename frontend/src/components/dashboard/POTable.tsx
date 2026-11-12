@@ -1,5 +1,5 @@
 import { ChevronDown } from "lucide-react";
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Link } from "react-router";
 import { compareMoney, formatINR, formatPct, isNegative, ratio } from "../../lib/format";
 import type { POView } from "../../lib/types";
@@ -25,9 +25,37 @@ function Consumption({ po }: { po: POView }) {
   );
 }
 
-function Invoices({ po }: { po: POView }) {
-  if (po.invoices.length === 0) return <p className="text-xs text-ink-3">No invoices matched to this PO yet.</p>;
+function Lines({ po }: { po: POView }) {
+  if (po.lines.length === 0) return null;
   return (
+    <div className="mb-3">
+      <div className="mb-1 text-label uppercase text-ink-3">Ordered</div>
+      <ul className="divide-y divide-line rounded-card border border-line bg-surface">
+        {po.lines.map((l) => (
+          <li key={l.line_no} className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 px-3 py-1.5 text-sm">
+            <span className="min-w-0 flex-1 text-ink">{l.description}</span>
+            <span className="num text-ink-3">
+              {l.qty.replace(/\.0+$/, "")} {l.unit} x {formatINR(l.unit_price)}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function Invoices({ po }: { po: POView }) {
+  if (po.invoices.length === 0)
+    return (
+      <>
+        <Lines po={po} />
+        <p className="text-xs text-ink-3">No invoices matched to this PO yet.</p>
+      </>
+    );
+  return (
+    <>
+    <Lines po={po} />
+    <div className="mb-1 text-label uppercase text-ink-3">Invoices</div>
     <ul className="divide-y divide-line rounded-card border border-line bg-surface">
       {po.invoices.map((inv) => (
         <li key={inv.run_id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 text-sm">
@@ -40,11 +68,19 @@ function Invoices({ po }: { po: POView }) {
         </li>
       ))}
     </ul>
+    </>
   );
 }
 
-export function POTable({ pos }: { pos: POView[] }) {
-  const [open, setOpen] = useState<string | null>(null);
+export function POTable({ pos, highlight = null }: { pos: POView[]; highlight?: string | null }) {
+  const [open, setOpen] = useState<string | null>(highlight);
+  // A just-created PO opens itself so it is visible straight away.
+  useEffect(() => {
+    if (!highlight) return;
+    setOpen(highlight);
+    // New POs sort to the end of the list: bring the row into view.
+    window.setTimeout(() => document.getElementById(`po-${highlight}`)?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
+  }, [highlight]);
   const toggle = (po: string) => setOpen((cur) => (cur === po ? null : po));
   return (
     <>
@@ -68,8 +104,9 @@ export function POTable({ pos }: { pos: POView[] }) {
               return (
                 <Fragment key={po.po_number}>
                   <tr
+                    id={`po-${po.po_number}`}
                     onClick={() => toggle(po.po_number)}
-                    className={cx("cursor-pointer align-top hover:bg-sunken", isOpen && "bg-sunken")}
+                    className={cx("cursor-pointer align-top hover:bg-sunken", isOpen && "bg-sunken", highlight === po.po_number && "bg-approve-50")}
                     aria-expanded={isOpen}
                   >
                     <td className="whitespace-nowrap px-4 py-3">

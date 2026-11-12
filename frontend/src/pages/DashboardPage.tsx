@@ -1,12 +1,13 @@
-import { Inbox, LayoutList, Receipt } from "lucide-react";
+import { CircleCheck, Inbox, LayoutList, Plus, Receipt } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router";
 import { FilterBar, type FilterValues } from "../components/dashboard/FilterBar";
+import { NewPODialog } from "../components/dashboard/NewPODialog";
 import { POTable } from "../components/dashboard/POTable";
 import { RunsTable } from "../components/dashboard/RunsTable";
 import { Dropzone } from "../components/Dropzone";
 import { ReviewDialog, type ReviewAction } from "../components/run/ReviewActions";
-import { Card, KpiTile } from "../components/ui/primitives";
+import { Button, Card, KpiTile } from "../components/ui/primitives";
 import { Tabs } from "../components/ui/Tabs";
 import { api } from "../lib/api";
 import { formatINR, formatMs, formatPct } from "../lib/format";
@@ -97,6 +98,8 @@ export function DashboardPage() {
   const vendors = useAutoRefresh(() => api.vendors(), []);
 
   const [review, setReview] = useState<{ run: RunSummary; action: ReviewAction } | null>(null);
+  const [newPO, setNewPO] = useState(false);
+  const [createdPO, setCreatedPO] = useState<string | null>(null);
 
   const update = (patch: Record<string, string>) => {
     const next = new URLSearchParams(params);
@@ -122,7 +125,8 @@ export function DashboardPage() {
         <div>
           <h1 className="text-lg font-semibold text-ink">Accounts payable</h1>
           <p className="mt-0.5 text-sm text-ink-3">
-            Every invoice extracted by Gemini, decided by deterministic rules, explained by template.
+            Drop in a vendor invoice and Tally checks it against your vendors and purchase orders, catches duplicates
+            and risky bank changes, and tells your team exactly what to do next.
           </p>
         </div>
         <Dropzone compact />
@@ -165,8 +169,22 @@ export function DashboardPage() {
           <p className="border-b border-line bg-reject-50 px-4 py-2 text-sm text-reject-700">Could not load data: {runs.error ?? pos.error}</p>
         )}
 
+        {tab === "pos" && (
+          <div className="flex flex-wrap items-center gap-3 border-b border-line px-4 py-3">
+            {createdPO ? (
+              <span className="inline-flex items-center gap-1.5 text-sm font-medium text-approve-700">
+                <CircleCheck className="size-4" aria-hidden /> {createdPO} created. Invoices quoting it will now match.
+              </span>
+            ) : (
+              <span className="text-sm text-ink-3">Remaining balance on each order, and the invoices billed against it.</span>
+            )}
+            <Button variant="primary" icon={Plus} className="ml-auto" onClick={() => setNewPO(true)}>
+              New purchase order
+            </Button>
+          </div>
+        )}
         {tab === "pos" ? (
-          pos.data ? <POTable pos={pos.data} /> : <p className="px-4 py-10 text-center text-sm text-ink-3">Loading purchase orders...</p>
+          pos.data ? <POTable pos={pos.data} highlight={createdPO} /> : <p className="px-4 py-10 text-center text-sm text-ink-3">Loading purchase orders...</p>
         ) : runs.loading && !runs.data ? (
           <p className="px-4 py-10 text-center text-sm text-ink-3">Loading runs...</p>
         ) : (
@@ -189,6 +207,18 @@ export function DashboardPage() {
           </p>
         )}
       </Card>
+
+      {newPO && (
+        <NewPODialog
+          vendors={vendors.data ?? []}
+          onClose={() => setNewPO(false)}
+          onCreated={(po) => {
+            setNewPO(false);
+            setCreatedPO(po.po_number);
+            void pos.refresh();
+          }}
+        />
+      )}
 
       {review && (
         <ReviewDialog

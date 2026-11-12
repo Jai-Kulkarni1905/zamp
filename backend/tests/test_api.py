@@ -267,3 +267,68 @@ def test_serves_built_frontend_with_spa_fallback(tmp_path: Path) -> None:
     assert js.text == "console.log(1)" and "immutable" in js.headers["cache-control"]
     assert c.get("/assets/missing-999.js").status_code == 404
     assert "nope" not in c.get("/../secret.txt").text  # no path traversal out of dist
+
+
+# -- creating purchase orders (A66, A67) ----------------------------------------
+
+HP3_PO = {
+    "vendor_id": "V002", "issue_date": "2026-11-07", "currency": "INR", "total_amount": "114460.00",
+    "lines": [
+        {"description": "Bubble wrap roll 1 m x 100 m", "hsn_sac": "3923", "qty": "50", "unit": "Rolls",
+         "unit_price": "1200.00"},
+        {"description": "BOPP packing tape 48 mm (box of 72)", "hsn_sac": "3919", "qty": "20", "unit": "Boxes",
+         "unit_price": "1850.00"},
+    ],
+}
+
+
+def test_create_po_assigns_next_number(client: TestClient) -> None:
+    assert len(client.get("/api/pos").json()) == 7  # seeded
+    assert client.get("/api/pos/next-number").json() == {"po_number": "PO-2026-0108"}
+    r = client.post("/api/pos", json=HP3_PO)
+    assert r.status_code == 201, r.text
+    po = r.json()
+    assert po["po_number"] == "PO-2026-0108" and po["status"] == "OPEN" and po["vendor_id"] == "V002"
+    assert (po["total"], po["consumed"], po["remaining"]) == ("114460.00", "0.00", "114460.00")
+    assert [(l["line_no"], l["description"], l["unit_price"]) for l in po["lines"]] == [
+        (1, "Bubble wrap roll 1 m x 100 m", "1200.00"), (2, "BOPP packing tape 48 mm (box of 72)", "1850.00")]
+    assert len(client.get("/api/pos").json()) == 8
+    assert client.get("/api/pos/next-number").json() == {"po_number": "PO-2026-0109"}
+    # reset restores the 7 seeded POs
+    client.post("/api/admin/reset")
+    assert len(client.get("/api/pos").json()) == 7
+
+
+@pytest.mark.parametrize(("patch", "status", "text"), [
+    ({"vendor_id": "V006"}, 400, "BLOCKED"),
+    ({"vendor_id": "V999"}, 400, "not in the vendor master"),
+    ({"issue_date": "2026-12-01"}, 400, "in the future"),
+    ({"total_amount": "90000.00"}, 400, "cannot be less than the line items"),
+    ({"lines": []}, 422, ""),
+    ({"total_amount": "0"}, 422, ""),
+    ({"currency": "USD"}, 422, ""),
+])
+def test_create_po_validation(client: TestClient, patch: dict[str, object], status: int, text: str) -> None:
+    r = client.post("/api/pos", json={**HP3_PO, **patch})
+    assert r.status_code == status and text in r.text
+    assert len(client.get("/api/pos").json()) == 7  # nothing created
+
+
+def test_create_po_rejects_bad_line(client: TestClient) -> None:
+    bad = {**HP3_PO, "lines": [{**HP3_PO["lines"][0], "qty": "0"}]}  # type: ignore[index]
+    assert client.post("/api/pos", json=bad).status_code == 422
+
+
+def test_new_po_then_matching_invoice_is_approved(client: TestClient) -> None:
+    before = upload(client, "HP-3")  # its PO does not exist yet
+    wait(client)
+    assert client.get(f"/api/runs/{before}").json()["decision"] == "NEEDS_REVIEW"
+    client.post("/api/admin/reset")
+
+    assert client.post("/api/pos", json=HP3_PO).json()["po_number"] == "PO-2026-0108"
+    run_id = upload(client, "HP-3")
+    wait(client)
+    d = client.get(f"/api/runs/{run_id}").json()
+    assert (d["decision"], d["flags"], d["matched_po"]) == ("APPROVED", [], "PO-2026-0108")
+    po = next(p for p in client.get("/api/pos").json() if p["po_number"] == "PO-2026-0108")
+    assert (po["consumed"], po["remaining"]) == ("114460.00", "0.00")

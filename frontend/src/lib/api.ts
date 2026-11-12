@@ -1,4 +1,4 @@
-import type { Health, POView, RunCreated, RunDetail, RunFilters, RunList, Stats, Vendor } from "./types";
+import type { Health, POCreate, POView, RunCreated, RunDetail, RunFilters, RunList, Stats, Vendor } from "./types";
 
 function query(params: object): string {
   const q = new URLSearchParams();
@@ -44,6 +44,9 @@ export const api = {
   runs: (filters: RunFilters = {}) => request<RunList>(`/api/runs${query({ limit: 500, ...filters })}`),
   stats: () => request<Stats>("/api/stats"),
   pos: () => request<POView[]>("/api/pos"),
+  nextPONumber: () => request<{ po_number: string }>("/api/pos/next-number"),
+  createPO: (body: POCreate) =>
+    request<POView>("/api/pos", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }),
   vendors: () => request<Vendor[]>("/api/vendors"),
   run: (id: string) => request<RunDetail>(`/api/runs/${encodeURIComponent(id)}`),
   upload: (file: File) => {

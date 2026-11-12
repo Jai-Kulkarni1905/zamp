@@ -16,11 +16,11 @@ from app.pipeline.runner import create_run, process_run
 from app.pipeline.stages.ingest import sha256
 from app.schemas import STAGE_ORDER, Extraction, StageEventOut
 from tests.conftest import INVOICES
-from tests.factories import EC1_A, EC1_B, EC1_C, EC2, EC3, EC4, HP2, make_extraction
+from tests.factories import EC1_A, EC1_B, EC1_C, EC2, EC3, EC4, HP2, HP3, make_extraction
 
 SCENARIOS: dict[str, Extraction] = {
     "HP-1": make_extraction(), "HP-2": HP2, "EC-1-A": EC1_A, "EC-1-B": EC1_B, "EC-1-C": EC1_C,
-    "EC-2": EC2, "EC-3": EC3, "EC-4": EC4,
+    "EC-2": EC2, "EC-3": EC3, "EC-4": EC4, "HP-3": HP3,
 }
 
 

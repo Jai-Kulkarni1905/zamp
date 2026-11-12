@@ -177,6 +177,48 @@
           "FRAUD_RISK"
         ]
       }
+    },
+    {
+      "run_order": 9,
+      "id": "HP-3",
+      "file": "HP-3.pdf",
+      "sha256": "901d937e30cdbe7391862ce9c9acc4dacff9c3de0fadae1176929fd22bef9b8b",
+      "template": "modern",
+      "vendor_id": "V002",
+      "invoice_number": "NPS/26-27/0904",
+      "invoice_date": "2026-11-09",
+      "po_reference": "PO-2026-0108",
+      "tax_inclusive": false,
+      "taxable": "97000.00",
+      "total": "114460.00",
+      "bank_account": "917020045612398",
+      "ifsc": "UTIB0002871",
+      "expected": {
+        "decision": "APPROVED",
+        "flags": [],
+        "requires_po": {
+          "po_number": "PO-2026-0108",
+          "vendor_id": "V002",
+          "issue_date_days_ago": 5,
+          "total_amount": "114460.00",
+          "lines": [
+            {
+              "description": "Bubble wrap roll 1 m x 100 m",
+              "hsn_sac": "3923",
+              "qty": "50",
+              "unit": "Rolls",
+              "unit_price": "1200.00"
+            },
+            {
+              "description": "BOPP packing tape 48 mm (box of 72)",
+              "hsn_sac": "3919",
+              "qty": "20",
+              "unit": "Boxes",
+              "unit_price": "1850.00"
+            }
+          ]
+        }
+      }
     }
   ]
 }

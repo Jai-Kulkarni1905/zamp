@@ -76,6 +76,7 @@ row plus the pill on the right, like the amber "Freight" row in the reference.
 | `Dropzone` | dashed 2px `line` border on `sunken`, accent when dragging; `compact` variant is one row for the dashboard header |
 | `RunsTable` | `sunken` header row with `text-label` headings, 1px row dividers, whole row clickable; collapses to stacked cards below `md` |
 | `POTable` | per-PO row with a consumption `ProgressBar` (accent within PO, review amber when over within tolerance), expands to its invoices with "counts" / "not counted" chips |
+| `NewPODialog` | modal form: auto-assigned PO number chip, vendor and date row, line grid with live amount preview, subtotal and GST hint on `sunken`, required total; footer lists what is still missing |
 | `QueueNav` | "Queue: 2 of 3" with prev / next arrows, shown on the run page when opened from the review queue |
 | `KpiTile size="lg"` | dashboard variant: 20px mono value, sub text on its own line |
 

@@ -16,6 +16,7 @@ import json
 import os
 import sys
 import time
+from datetime import date, timedelta
 from pathlib import Path
 
 import httpx
@@ -28,8 +29,9 @@ EXPECTED_PO = {
     "PO-2026-0101": ("177000.00", "0.00"),
     "PO-2026-0102": ("203610.00", "-3010.00"),
     "PO-2026-0103": ("240000.00", "60000.00"),
+    "PO-2026-0108": ("114460.00", "0.00"),  # created during the run, then billed by HP-3
 }
-EXPECTED_STATS = {"runs_done": 8, "runs_error": 0, "review_queue": 3, "value_processed": "1111810.00"}
+EXPECTED_STATS = {"runs_done": 9, "runs_error": 0, "review_queue": 3, "value_processed": "1226270.00"}
 
 
 def wait_until_up(client: httpx.Client, timeout_s: float = 180) -> float:
@@ -62,8 +64,21 @@ def follow(client: httpx.Client, run_id: str) -> tuple[dict[str, object], int]:
     raise RuntimeError("stream closed without an end event")
 
 
+def create_po(client: httpx.Client, needs: dict[str, object], as_of: str) -> int:
+    """POST the PO from the manifest; the server assigns the number, which must match the invoice's PO."""
+    issue = date.fromisoformat(as_of) - timedelta(days=int(str(needs["issue_date_days_ago"])))
+    body = {"vendor_id": needs["vendor_id"], "issue_date": issue.isoformat(), "currency": "INR",
+            "total_amount": needs["total_amount"], "lines": needs["lines"]}
+    r = client.post("/api/pos", json=body, timeout=60)
+    got = r.json().get("po_number") if r.status_code == 201 else f"HTTP {r.status_code} {r.text[:80]}"
+    ok = got == needs["po_number"]
+    print(f"  {'':<2} {'PO':<7} {'create ' + str(needs['po_number']):<38} {'created ' + str(got):<38} {'':>6}  "
+          f"{'PASS' if ok else 'FAIL'}")
+    return 0 if ok else 1
+
+
 def one_round(client: httpx.Client, invoices: list[dict[str, object]], token: str | None, n: int,
-              full: bool = True) -> int:
+              full: bool = True, as_of: str = "") -> int:
     headers = {"X-Admin-Token": token} if token else {}
     reset = client.post("/api/admin/reset", headers=headers, timeout=60)
     if reset.status_code != 200:
@@ -73,6 +88,9 @@ def one_round(client: httpx.Client, invoices: list[dict[str, object]], token: st
     print(f"  {'#':<2} {'ID':<7} {'Expected':<38} {'Actual':<38} {'Time':>6}  Result")
     problems = 0
     for inv in invoices:
+        needs = inv["expected"].get("requires_po")
+        if needs:  # this invoice bills a PO that is not seeded: create it like a user would (A67)
+            problems += create_po(client, needs, as_of)
         pdf = INVOICES / str(inv["file"])
         t0 = time.monotonic()
         try:
@@ -133,7 +151,8 @@ def main() -> None:
         health = client.get("/api/health").json()
         print(f"{args.base_url} is up (waited {waited:.0f}s), LLM_MODE={health['llm_mode']}")
         full = not args.only
-        total = sum(one_round(client, invoices, args.admin_token, n, full) for n in range(1, args.rounds + 1))
+        total = sum(one_round(client, invoices, args.admin_token, n, full, manifest["as_of"])
+                    for n in range(1, args.rounds + 1))
     print(f"\n{'ZERO ERRORS' if total == 0 else f'{total} PROBLEM(S)'} across {args.rounds} round(s)")
     sys.exit(1 if total else 0)
 

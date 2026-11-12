@@ -356,3 +356,19 @@ does not, so filename (255), invoice number and vendor key (64) are cut to fit r
 
 **A65. App and database run in the same region.** Each stage commits an event, about 25 writes per run,
 so the Render service is placed in the region closest to the Neon database (Singapore by default).
+
+## Creating purchase orders
+
+**A66. New POs get the next number automatically; everything else is entered by hand.** The number is
+`PO-<year>-<seq>`: the current year and the next sequence number after the highest existing PO of that
+year (starting at 0101). The user enters the vendor, issue date, every line (description, HSN/SAC, quantity,
+unit, unit price) and the total including GST. The form previews line amounts, the subtotal and the 18% GST
+figure, but never fills in the total itself. A PO is refused for an unknown or BLOCKED vendor, a future issue
+date, or a total below the line items. Currency is INR (A1). New POs start OPEN. Reset restores the seeded POs.
+
+**A67. The demo starts with 7 seeded POs and creates the 8th.** PO-2026-0108 (the blocked vendor's PO, which
+no test invoice used) was removed from the seed, so the first PO created after a reset is numbered
+PO-2026-0108. Test invoice HP-3 (Nilgiri Packaging, ₹1,14,460.00 including 18% IGST) bills that number, so
+it is approved only after the PO is created. The PO is for Nilgiri on purpose: a new open PO for Kaveri would
+change how EC-3 (no PO number) is matched. The demo tools (`app.cli demo`, `scripts/rehearse.py`) create
+the PO through the same rules before HP-3.

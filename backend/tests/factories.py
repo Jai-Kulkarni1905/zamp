@@ -99,3 +99,11 @@ HP2 = make_extraction(
                 line("Stretch wrap film roll 23 micron", "200", "299.25", "59850.00")],
     taxes=[tax("IGST", "18", "31059.15")],
 )
+HP3 = make_extraction(
+    vendor_name="Nilgiri Packaging Solutions LLP", vendor_gstin="33AAQFN7392H1ZK", invoice_number="NPS/26-27/0904",
+    invoice_date="2026-11-09", due_date="2026-12-09", po_reference="PO-2026-0108", subtotal="97000.00",
+    total="114460.00", bank_account="917020045612398", ifsc="UTIB0002871",
+    line_items=[line("Bubble wrap roll 1 m x 100 m", "50", "1200.00", "60000.00"),
+                line("BOPP packing tape 48 mm (box of 72)", "20", "1850.00", "37000.00")],
+    taxes=[tax("IGST", "18", "17460.00")],
+)

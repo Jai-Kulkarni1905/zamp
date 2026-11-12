@@ -112,8 +112,46 @@ class POInvoice(BaseModel):
     counts_against_po: bool
 
 
+class POLineOut(BaseModel):
+    line_no: int
+    description: str
+    hsn_sac: str
+    qty: Decimal
+    unit: str
+    unit_price: Decimal
+
+
 class POView(POBalance):
     invoices: list[POInvoice]
+    lines: list[POLineOut] = []
+
+
+class POLineIn(BaseModel):
+    description: str = Field(min_length=1, max_length=300)
+    hsn_sac: str = Field("", max_length=16)
+    qty: Decimal = Field(gt=0, max_digits=12, decimal_places=3)
+    unit: str = Field(min_length=1, max_length=16)
+    unit_price: Decimal = Field(gt=0, max_digits=14, decimal_places=2)
+
+    @field_validator("description", "unit", "hsn_sac")
+    @classmethod
+    def _strip(cls, v: str) -> str:
+        return v.strip()
+
+
+class POCreate(BaseModel):
+    """Everything but the PO number is entered by the user; the number is assigned by the server (A66)."""
+
+    vendor_id: str
+    issue_date: date
+    currency: Literal["INR"] = "INR"
+    total_amount: Decimal = Field(gt=0, max_digits=14, decimal_places=2,
+                                  description="PO cap including GST (A34)")
+    lines: list[POLineIn] = Field(min_length=1, max_length=50)
+
+
+class NextPONumber(BaseModel):
+    po_number: str
 
 
 class VendorView(BaseModel):

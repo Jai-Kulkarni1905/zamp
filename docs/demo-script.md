@@ -8,7 +8,7 @@ first, and EC-2 needs HP-1 approved first (PLAN.md section 7).
 1. Open the app URL. If it is asleep, the first load takes about a minute.
 2. Reset to an empty dashboard:
    `curl -X POST https://<app>/api/admin/reset -H "X-Admin-Token: <token>"`
-3. Check the dashboard shows 0 runs and the review queue is empty.
+3. Check the dashboard shows 0 runs, the review queue is empty, and the Purchase orders tab shows 7.
 4. Have the 8 PDFs from `data/invoices/` in one folder, ready to drag.
 5. **On a phone (mobile data)**: open the URL and wait a full minute before giving up (the free plan may be
    asleep). If it still will not load, Indian carriers sometimes block hosting domains: set Private DNS to
@@ -28,6 +28,13 @@ first, and EC-2 needs HP-1 approved first (PLAN.md section 7).
 | 6 | `EC-2.pdf` | REJECTED, DUPLICATE | Same invoice re-sent with a new layout and `INV/2026/0142` instead of `INV-2026-142`. Duplicate stage links the original HP-1 run. Only action: do not pay. |
 | 7 | `EC-3.pdf` | NEEDS_REVIEW, LOW_CONFIDENCE, PO_INFERRED | Scanned, rotated image: Ingest says "scanned", grounding skipped. No invoice number, no PO: PO-2026-0104 inferred over the office chairs PO (scores shown). Next actions list exactly what is missing. |
 | 8 | `EC-4.pdf` | NEEDS_REVIEW, FRAUD_RISK | Approved vendor, valid PO, but the bank account and IFSC changed. "Verify by calling the number on file, not the one on the invoice." |
+
+## New purchase order (optional, before or after the run order)
+
+Purchase orders tab > **New purchase order**. The number fills in automatically (PO-2026-0108 after a reset).
+Type: vendor Nilgiri Packaging Solutions LLP, any issue date up to today, line 1 `Bubble wrap roll 1 m x 100 m`,
+3923, 50, Rolls, 1200; line 2 `BOPP packing tape 48 mm (box of 72)`, 3919, 20, Boxes, 1850; total 114460.
+Then drop `HP-3.pdf`: approved against the new PO, which shows as fully used.
 
 ## Close (review queue)
 

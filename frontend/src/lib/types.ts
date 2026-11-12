@@ -126,8 +126,26 @@ export interface POInvoice {
   counts_against_po: boolean;
 }
 
+export interface POLine {
+  line_no: number;
+  description: string;
+  hsn_sac: string;
+  qty: string;
+  unit: string;
+  unit_price: Money;
+}
+
 export interface POView extends POBalance {
   invoices: POInvoice[];
+  lines: POLine[];
+}
+
+export interface POCreate {
+  vendor_id: string;
+  issue_date: string;
+  currency: "INR";
+  total_amount: Money;
+  lines: Array<Omit<POLine, "line_no">>;
 }
 
 export interface Vendor {
