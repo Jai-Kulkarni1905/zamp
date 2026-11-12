@@ -1,0 +1,92 @@
+{
+  "file_hash": "fd390eb0bbb7a8f1e246889b1737508fa55969f769dbae0fac41cace42c47a93",
+  "filename": "EC-4.pdf",
+  "model": "gemini-3.6-flash",
+  "recorded_at": "2026-11-12T12:49:54+00:00",
+  "extraction": {
+    "vendor_name": {
+      "value": "Brightline IT Services Pvt Ltd",
+      "confidence": 0.99,
+      "source_text": "Brightline IT Services Pvt Ltd"
+    },
+    "vendor_gstin": {
+      "value": "36AAHCB9054L1Z8",
+      "confidence": 0.99,
+      "source_text": "36AAHCB9054L1Z8"
+    },
+    "invoice_number": {
+      "value": "BITS/INV/2026/1187",
+      "confidence": 0.99,
+      "source_text": "BITS/INV/2026/1187"
+    },
+    "invoice_date": {
+      "value": "2026-11-02",
+      "confidence": 0.99,
+      "source_text": "02 November 2026"
+    },
+    "due_date": {
+      "value": "2026-12-02",
+      "confidence": 0.99,
+      "source_text": "02 December 2026"
+    },
+    "po_reference": {
+      "value": "PO-2026-0106",
+      "confidence": 0.99,
+      "source_text": "PO-2026-0106"
+    },
+    "currency": {
+      "value": "INR",
+      "confidence": 0.99,
+      "source_text": "Rs."
+    },
+    "line_items": [
+      {
+        "description": "Laptop annual maintenance contract (per device)",
+        "qty": "25",
+        "unit_price": "3000.00",
+        "amount": "75000.00",
+        "confidence": 0.99
+      },
+      {
+        "description": "On-site support visit",
+        "qty": "10",
+        "unit_price": "2500.00",
+        "amount": "25000.00",
+        "confidence": 0.99
+      }
+    ],
+    "subtotal": {
+      "value": "100000.00",
+      "confidence": 0.99,
+      "source_text": "1,00,000.00"
+    },
+    "taxes": [
+      {
+        "type": "IGST",
+        "rate": "18",
+        "amount": "18000.00",
+        "confidence": 0.99
+      }
+    ],
+    "tax_inclusive": {
+      "value": false,
+      "confidence": 0.99,
+      "source_text": null
+    },
+    "total": {
+      "value": "118000.00",
+      "confidence": 0.99,
+      "source_text": "1,18,000.00"
+    },
+    "bank_account": {
+      "value": "045661900002345",
+      "confidence": 0.99,
+      "source_text": "045661900002345"
+    },
+    "ifsc": {
+      "value": "YESB0000456",
+      "confidence": 0.99,
+      "source_text": "YESB0000456"
+    }
+  }
+}

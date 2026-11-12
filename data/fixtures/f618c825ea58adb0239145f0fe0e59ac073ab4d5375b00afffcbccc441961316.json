@@ -1,0 +1,85 @@
+{
+  "file_hash": "f618c825ea58adb0239145f0fe0e59ac073ab4d5375b00afffcbccc441961316",
+  "filename": "EC-1-A.pdf",
+  "model": "gemini-3.6-flash",
+  "recorded_at": "2026-11-12T12:47:37+00:00",
+  "extraction": {
+    "vendor_name": {
+      "value": "VARDHAN STEEL FABRICATORS PVT LTD",
+      "confidence": 0.99,
+      "source_text": "VARDHAN STEEL FABRICATORS PVT LTD"
+    },
+    "vendor_gstin": {
+      "value": "24AAECV5163P1Z2",
+      "confidence": 0.99,
+      "source_text": "24AAECV5163P1Z2"
+    },
+    "invoice_number": {
+      "value": "VSF/2627/0311",
+      "confidence": 0.99,
+      "source_text": "VSF/2627/0311"
+    },
+    "invoice_date": {
+      "value": "2026-10-03",
+      "confidence": 0.98,
+      "source_text": "03/10/2026"
+    },
+    "due_date": {
+      "value": "2026-11-02",
+      "confidence": 0.98,
+      "source_text": "02/11/2026"
+    },
+    "po_reference": {
+      "value": "PO-2026-0103",
+      "confidence": 0.99,
+      "source_text": "PO-2026-0103"
+    },
+    "currency": {
+      "value": "INR",
+      "confidence": 0.99,
+      "source_text": "INR"
+    },
+    "line_items": [
+      {
+        "description": "FABRICATION AND ERECTION OF MS SHED STRUCTURE, MILESTONE 1",
+        "qty": "1",
+        "unit_price": "101694.92",
+        "amount": "101694.92",
+        "confidence": 0.98
+      }
+    ],
+    "subtotal": {
+      "value": "101694.92",
+      "confidence": 0.99,
+      "source_text": "1,01,694.92"
+    },
+    "taxes": [
+      {
+        "type": "IGST",
+        "rate": "18",
+        "amount": "18305.09",
+        "confidence": 0.99
+      }
+    ],
+    "tax_inclusive": {
+      "value": false,
+      "confidence": 0.95,
+      "source_text": null
+    },
+    "total": {
+      "value": "120000.00",
+      "confidence": 0.99,
+      "source_text": "1,20,000.00"
+    },
+    "bank_account": {
+      "value": "34567812901",
+      "confidence": 0.99,
+      "source_text": "34567812901"
+    },
+    "ifsc": {
+      "value": "SBIN0004512",
+      "confidence": 0.99,
+      "source_text": "SBIN0004512"
+    }
+  }
+}

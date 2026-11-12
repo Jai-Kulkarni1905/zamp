@@ -1,0 +1,105 @@
+{
+  "file_hash": "2de83185cbac322fad239567e323f5d5e75a2e8dd7a9c8ec534876ff515396d3",
+  "filename": "EC-2.pdf",
+  "model": "gemini-3.6-flash",
+  "recorded_at": "2026-11-12T12:49:20+00:00",
+  "extraction": {
+    "vendor_name": {
+      "value": "Shakti Industrial Supplies Pvt Ltd",
+      "confidence": 0.99,
+      "source_text": "Shakti Industrial Supplies Pvt Ltd"
+    },
+    "vendor_gstin": {
+      "value": "27AAKCS4821M1Z5",
+      "confidence": 0.99,
+      "source_text": "27AAKCS4821M1Z5"
+    },
+    "invoice_number": {
+      "value": "INV/2026/0142",
+      "confidence": 0.99,
+      "source_text": "INV/2026/0142"
+    },
+    "invoice_date": {
+      "value": "2026-10-23",
+      "confidence": 0.99,
+      "source_text": "23 October 2026"
+    },
+    "due_date": {
+      "value": "2026-11-22",
+      "confidence": 0.99,
+      "source_text": "22 November 2026"
+    },
+    "po_reference": {
+      "value": "PO-2026-0101",
+      "confidence": 0.99,
+      "source_text": "PO-2026-0101"
+    },
+    "currency": {
+      "value": "INR",
+      "confidence": 0.99,
+      "source_text": "Rs."
+    },
+    "line_items": [
+      {
+        "description": "Safety helmet ISI marked (IS 2925)",
+        "qty": "200",
+        "unit_price": "350.00",
+        "amount": "70000.00",
+        "confidence": 0.98
+      },
+      {
+        "description": "Industrial safety gloves (pair)",
+        "qty": "500",
+        "unit_price": "120.00",
+        "amount": "60000.00",
+        "confidence": 0.98
+      },
+      {
+        "description": "Reflective safety vest",
+        "qty": "100",
+        "unit_price": "200.00",
+        "amount": "20000.00",
+        "confidence": 0.98
+      }
+    ],
+    "subtotal": {
+      "value": "150000.00",
+      "confidence": 0.99,
+      "source_text": "1,50,000.00"
+    },
+    "taxes": [
+      {
+        "type": "CGST",
+        "rate": "9",
+        "amount": "13500.00",
+        "confidence": 0.98
+      },
+      {
+        "type": "SGST",
+        "rate": "9",
+        "amount": "13500.00",
+        "confidence": 0.98
+      }
+    ],
+    "tax_inclusive": {
+      "value": false,
+      "confidence": 0.95,
+      "source_text": null
+    },
+    "total": {
+      "value": "177000.00",
+      "confidence": 0.99,
+      "source_text": "1,77,000.00"
+    },
+    "bank_account": {
+      "value": "50200012345678",
+      "confidence": 0.99,
+      "source_text": "50200012345678"
+    },
+    "ifsc": {
+      "value": "HDFC0001234",
+      "confidence": 0.99,
+      "source_text": "HDFC0001234"
+    }
+  }
+}

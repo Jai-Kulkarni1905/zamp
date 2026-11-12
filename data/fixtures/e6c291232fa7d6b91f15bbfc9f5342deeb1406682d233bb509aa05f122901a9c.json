@@ -1,0 +1,99 @@
+{
+  "file_hash": "e6c291232fa7d6b91f15bbfc9f5342deeb1406682d233bb509aa05f122901a9c",
+  "filename": "EC-3.pdf",
+  "model": "gemini-3.6-flash",
+  "recorded_at": "2026-11-12T12:49:36+00:00",
+  "extraction": {
+    "vendor_name": {
+      "value": "Kaveri Office Essentials",
+      "confidence": 0.98,
+      "source_text": "Kaveri Office Essentials"
+    },
+    "vendor_gstin": {
+      "value": "29BQKPK2847R1ZX",
+      "confidence": 0.98,
+      "source_text": "29BQKPK2847R1ZX"
+    },
+    "invoice_number": {
+      "value": null,
+      "confidence": 0.95,
+      "source_text": null
+    },
+    "invoice_date": {
+      "value": "2026-11-04",
+      "confidence": 0.98,
+      "source_text": "04-Nov-2026"
+    },
+    "due_date": {
+      "value": "2026-12-04",
+      "confidence": 0.98,
+      "source_text": "04-Dec-2026"
+    },
+    "po_reference": {
+      "value": null,
+      "confidence": 0.95,
+      "source_text": null
+    },
+    "currency": {
+      "value": "INR",
+      "confidence": 0.98,
+      "source_text": "Rs."
+    },
+    "line_items": [
+      {
+        "description": "A4 copier paper 75 GSM (ream of 500)",
+        "qty": "300",
+        "unit_price": "240.00",
+        "amount": "72000.00",
+        "confidence": 0.98
+      },
+      {
+        "description": "Whiteboard markers (box of 10)",
+        "qty": "50",
+        "unit_price": "180.00",
+        "amount": "9000.00",
+        "confidence": 0.98
+      },
+      {
+        "description": "Box file with spring clip",
+        "qty": "200",
+        "unit_price": "45.00",
+        "amount": "9000.00",
+        "confidence": 0.98
+      }
+    ],
+    "subtotal": {
+      "value": "90000.00",
+      "confidence": 0.98,
+      "source_text": "90,000.00"
+    },
+    "taxes": [
+      {
+        "type": "IGST",
+        "rate": "18",
+        "amount": "16200.00",
+        "confidence": 0.98
+      }
+    ],
+    "tax_inclusive": {
+      "value": false,
+      "confidence": 0.98,
+      "source_text": null
+    },
+    "total": {
+      "value": "106200.00",
+      "confidence": 0.98,
+      "source_text": "1,06,200.00"
+    },
+    "bank_account": {
+      "value": "0412101034567",
+      "confidence": 0.98,
+      "source_text": "0412101034567"
+    },
+    "ifsc": {
+      "value": "CNRB0000412",
+      "confidence": 0.98,
+      "source_text": "CNRB0000412"
+    }
+  }
+}

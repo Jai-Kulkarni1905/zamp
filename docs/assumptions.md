@@ -232,3 +232,35 @@ invoices do. The round off is at most ₹0.50, so it stays inside the ±₹1 ari
 
 **A39. Vendor master has extra columns:** `phone` (the "number on file" that EC-4's next action
 refers to), `address` and `state` (to choose CGST+SGST or IGST against the buyer's state).
+
+## Pipeline core (Layer 2)
+
+**A40. A rule result can be SKIPPED.** When a check cannot run (scanned PDF for grounding, no PO
+for the amount check, no invoice number for duplicate checks) it is stored as SKIPPED with the
+reason, so no check is silent. SKIPPED never affects the decision.
+
+**A41. A missing currency is assumed INR.** Every vendor and PO is in INR (A1) and most Indian
+invoices print "Rs." rather than a currency code. The Normalize stage records "INR (assumed, not
+printed)" so the assumption is visible. A currency that is printed and is not INR still fails
+VAL-CURRENCY.
+
+**A42. Flags are truthful even on rejected runs, but next actions follow the decision.** A
+duplicate that arrives after the original consumed the PO also fails AMT-REMAINING, so EC-2
+carries both `DUPLICATE` and `OVER_PO`: paying it really would overpay the PO. The decision is
+still REJECTED, and a rejected run lists next actions only for its HARD reasons ("Do not pay"),
+so the reviewer is not told to amend a PO for an invoice that must not be paid.
+
+**A43. Gemini's confidence is self-reported.** The model rates its own confidence, so the numbers
+are not calibrated probabilities. They are one signal; the grounding check (A13) is the
+independent cross-check on text PDFs. The prompt tells the model to return null rather than guess
+for anything not printed, so a missing invoice number surfaces as VAL-REQUIRED, not as a guess.
+
+**A44. IST is a fixed +05:30 offset.** India has no daylight saving, so a fixed offset gives the
+same "today" as a time zone database, without adding a dependency on Windows.
+
+**A45. An explicit PO cannot be confirmed without a known vendor.** If the invoice names a real
+PO but the vendor did not match, PO-EXPLICIT is a SOFT fail and the amount check is SKIPPED.
+
+**A46. PO inference needs the invoice total.** Without a total the balance fit is 0, so the score
+can reach at most 0.40 and no PO is inferred (SOFT fail). The missing total is already
+VAL-REQUIRED.
