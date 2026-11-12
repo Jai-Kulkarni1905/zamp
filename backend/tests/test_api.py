@@ -152,7 +152,10 @@ def test_list_and_filters(client: TestClient, demo: dict[str, str]) -> None:
     body = client.get("/api/runs").json()
     assert body["total"] == 8 and body["items"][0]["filename"] == "EC-4.pdf"  # newest first
     assert client.get("/api/runs", params={"decision": "APPROVED"}).json()["total"] == 4
-    assert client.get("/api/runs", params={"review_queue": True}).json()["total"] == 3
+    queue = client.get("/api/runs", params={"review_queue": True}).json()
+    assert queue["total"] == 3
+    assert {i["filename"]: i["verdict"].split(":")[0] for i in queue["items"]} == {
+        "EC-4.pdf": "Needs review", "EC-3.pdf": "Needs review", "EC-1-C.pdf": "Needs review"}
     assert [i["filename"] for i in client.get("/api/runs", params={"flag": "FRAUD_RISK"}).json()["items"]] == ["EC-4.pdf"]
     assert client.get("/api/runs", params={"vendor_id": "V003"}).json()["total"] == 3
     assert client.get("/api/runs", params={"q": "nilgiri"}).json()["total"] == 1

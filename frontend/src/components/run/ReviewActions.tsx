@@ -2,10 +2,13 @@ import { CircleCheck, CircleX, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { api } from "../../lib/api";
 import { formatINR } from "../../lib/format";
-import type { RunDetail } from "../../lib/types";
+import type { RunDetail, RunSummary } from "../../lib/types";
+
+export type ReviewTarget = Pick<RunSummary, "id" | "total" | "matched_po">;
 import { Button, cx } from "../ui/primitives";
 
-type Action = "APPROVE" | "REJECT";
+export type ReviewAction = "APPROVE" | "REJECT";
+type Action = ReviewAction;
 
 /** Approve / Reject for NEEDS_REVIEW runs. A note is required and the override is final (A48). */
 export function ReviewActions({ run, onDone }: { run: RunDetail; onDone: (run: RunDetail) => void }) {
@@ -27,7 +30,7 @@ export function ReviewActions({ run, onDone }: { run: RunDetail; onDone: (run: R
   );
 }
 
-function ReviewDialog({ run, action, onClose, onDone }: { run: RunDetail; action: Action; onClose: () => void; onDone: (run: RunDetail) => void }) {
+export function ReviewDialog({ run, action, onClose, onDone }: { run: ReviewTarget; action: Action; onClose: () => void; onDone: (run: RunDetail) => void }) {
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);

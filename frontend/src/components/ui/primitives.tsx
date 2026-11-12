@@ -130,21 +130,24 @@ export function KpiTile({
   value,
   sub,
   subTone,
+  size = "md",
   className,
 }: {
   label: string;
   value: ReactNode;
   sub?: ReactNode;
   subTone?: string;
+  size?: "md" | "lg";
   className?: string;
 }) {
   return (
-    <div className={cx("min-w-0 rounded-control border border-line bg-surface px-3 py-2", className)}>
+    <div className={cx("min-w-0 rounded-control border border-line bg-surface", size === "lg" ? "px-4 py-3 shadow-card" : "px-3 py-2", className)}>
       <Label>{label}</Label>
-      <div className="num mt-0.5 truncate text-base font-semibold text-ink">
+      <div className={cx("num mt-0.5 truncate font-semibold text-ink", size === "lg" ? "text-xl" : "text-base")}>
         {value}
-        {sub && <span className={cx("ml-1.5 font-sans text-xs font-medium", subTone ? styleOf(subTone).text : "text-ink-3")}>{sub}</span>}
+        {sub && size === "md" && <span className={cx("ml-1.5 font-sans text-xs font-medium", subTone ? styleOf(subTone).text : "text-ink-3")}>{sub}</span>}
       </div>
+      {sub && size === "lg" && <div className={cx("mt-0.5 truncate text-xs font-medium", subTone ? styleOf(subTone).text : "text-ink-3")}>{sub}</div>}
     </div>
   );
 }

@@ -33,6 +33,7 @@ class RunSummary(BaseModel):
     created_at: datetime
     duration_ms: int | None
     reviewer_action: str | None
+    verdict: str | None = Field(None, description="One-line verdict from the explanation, for list views.")
 
 
 class RunList(BaseModel):

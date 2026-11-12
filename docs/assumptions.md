@@ -318,3 +318,23 @@ fonts with no layout change. Self-hosting them is a Layer 7 option.
 **A57. A reviewer override changes the headline, not the record.** After an override the banner
 leads with the reviewer's decision and note, and shows the automated verdict underneath; the
 decision card keeps the automated explanation unchanged (A30, A48).
+
+## Dashboard (Layer 5)
+
+**A58. The dashboard polls instead of opening a second event stream.** `/api/stats` is the
+heartbeat: every 2 seconds while any run is QUEUED or RUNNING, every 15 seconds otherwise, and on
+returning to the browser tab. The runs list and PO table re-fetch whenever the stats counters
+change. Uploads from other tabs or users therefore appear within 15 seconds without a
+dashboard-wide SSE endpoint. The run view keeps its own per-run SSE stream.
+
+**A59. The review queue works oldest first.** On the run page, "Queue: n of m" and its arrows walk
+the NEEDS_REVIEW runs without a reviewer action in the order they arrived. After a review the
+run drops out and the pager offers the next one.
+
+**A60. The run list carries a one-line verdict.** `GET /api/runs` items include `verdict` (from the
+stored explanation) so the review queue can show why each invoice is waiting without fetching every
+run's detail. This is an additive API field; the database schema is unchanged.
+
+**A61. Dashboard filters live in the URL.** Tab, search, decision, flag, vendor and date range are
+query parameters (for example `/?tab=review` or `/?flag=OVER_PO`), so a filtered view can be
+bookmarked or shared and survives a reload.

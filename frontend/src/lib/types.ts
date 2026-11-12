@@ -80,6 +80,67 @@ export interface RunSummary {
   created_at: string;
   duration_ms: number | null;
   reviewer_action: "APPROVE" | "REJECT" | null;
+  verdict: string | null;
+}
+
+export interface RunList {
+  items: RunSummary[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface RunFilters {
+  decision?: Decision;
+  flag?: Flag;
+  vendor_id?: string;
+  date_from?: string;
+  date_to?: string;
+  q?: string;
+  review_queue?: boolean;
+  limit?: number;
+}
+
+export interface Stats {
+  runs_total: number;
+  runs_done: number;
+  runs_error: number;
+  runs_in_progress: number;
+  decisions: Record<Decision, number>;
+  effective_decisions: Record<Decision, number>;
+  approval_rate: number | null;
+  review_queue: number;
+  avg_processing_ms: number | null;
+  value_processed: Money;
+  value_approved: Money;
+  flags: Record<Flag, number>;
+}
+
+export interface POInvoice {
+  run_id: string;
+  filename: string;
+  invoice_number: string | null;
+  total: Money | null;
+  decision: Decision | null;
+  effective_decision: Decision | null;
+  counts_against_po: boolean;
+}
+
+export interface POView extends POBalance {
+  invoices: POInvoice[];
+}
+
+export interface Vendor {
+  vendor_id: string;
+  legal_name: string;
+  aliases: string[];
+  gstin: string;
+  status: string;
+  bank_account_masked: string | null;
+  ifsc: string;
+  email: string;
+  phone: string;
+  state: string;
 }
 
 export interface RunDetail extends RunSummary {

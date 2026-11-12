@@ -25,6 +25,7 @@ def summary(run: Run, names: dict[str, str]) -> RunSummary:
         invoice_date=run.invoice_date, total=run.total, matched_po=run.matched_po,
         po_match_type=run.po_match_type, created_at=run.created_at, duration_ms=run.duration_ms,
         reviewer_action=run.reviewer_action,
+        verdict=(run.explanation_json or {}).get("verdict"),
     )
 
 

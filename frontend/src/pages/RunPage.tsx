@@ -1,8 +1,9 @@
 import { ChevronRight } from "lucide-react";
-import { Link, useParams } from "react-router";
+import { Link, useParams, useSearchParams } from "react-router";
 import { DecisionBanner } from "../components/run/DecisionBanner";
 import { DecisionSection } from "../components/run/DecisionSection";
 import { PdfPanel } from "../components/run/PdfPanel";
+import { QueueNav } from "../components/run/QueueNav";
 import { ReviewActions } from "../components/run/ReviewActions";
 import { StageTimeline } from "../components/run/StageTimeline";
 import { Card, Chip } from "../components/ui/primitives";
@@ -13,6 +14,7 @@ import { useRun } from "../lib/useRun";
 export function RunPage() {
   const { id = "" } = useParams();
   const { run, stages, events, live, error, setRun } = useRun(id);
+  const fromQueue = useSearchParams()[0].get("queue") === "review";
 
   if (!run) {
     return (
@@ -26,8 +28,8 @@ export function RunPage() {
     <div className="mx-auto max-w-[1440px] space-y-4 px-4 py-4 sm:px-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <nav aria-label="Breadcrumb" className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 text-sm text-ink-3">
-          <Link to="/" className="hover:text-ink">
-            Runs
+          <Link to={fromQueue ? "/?tab=review" : "/"} className="hover:text-ink">
+            {fromQueue ? "Review queue" : "Dashboard"}
           </Link>
           {run.vendor_name && (
             <>
@@ -40,7 +42,10 @@ export function RunPage() {
           {run.invoice_date && <Chip>{formatDate(run.invoice_date)}</Chip>}
           {run.matched_po && <Chip tone={run.po_match_type === "INFERRED" ? "WARN" : "neutral"}>{run.matched_po}</Chip>}
         </nav>
-        <ReviewActions run={run} onDone={setRun} />
+        <div className="flex flex-wrap items-center gap-2">
+          {fromQueue && <QueueNav runId={run.id} version={`${run.status}-${run.reviewer_action ?? ""}`} />}
+          <ReviewActions run={run} onDone={setRun} />
+        </div>
       </div>
 
       {error && <p className="rounded-control border border-review-300 bg-review-50 px-3 py-2 text-sm text-review-800">{error}</p>}

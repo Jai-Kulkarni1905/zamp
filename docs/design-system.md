@@ -71,6 +71,13 @@ row plus the pill on the right, like the amber "Freight" row in the reference.
 | `ConfidenceBar` | 4px bar, approve-600 when at or above 0.70, review-600 below |
 | `ProgressBar` | 6px accent bar on `accent-100` track (tolerance budget, PO consumption) |
 | `Timeline` | 8px dots on a 1px `line` rail, mono time + label (event log) |
+| `Tabs` | underlined tab bar, accent-600 underline on the active tab, count badge per tab (accent-600 filled when it needs attention, like the review queue) |
+| `SearchInput` | 32px, `sunken` bg, search icon left, `/` shortcut hint right; lives in the top bar and drives the dashboard's `?q=` |
+| `Dropzone` | dashed 2px `line` border on `sunken`, accent when dragging; `compact` variant is one row for the dashboard header |
+| `RunsTable` | `sunken` header row with `text-label` headings, 1px row dividers, whole row clickable; collapses to stacked cards below `md` |
+| `POTable` | per-PO row with a consumption `ProgressBar` (accent within PO, review amber when over within tolerance), expands to its invoices with "counts" / "not counted" chips |
+| `QueueNav` | "Queue: 2 of 3" with prev / next arrows, shown on the run page when opened from the review queue |
+| `KpiTile size="lg"` | dashboard variant: 20px mono value, sub text on its own line |
 
 ## Rules
 
