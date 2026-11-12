@@ -262,6 +262,7 @@ def test_serves_built_frontend_with_spa_fallback(tmp_path: Path) -> None:
     assert c.get("/api/missing").status_code == 404  # unknown API path is not swallowed by the SPA
     assert "<title>AP</title>" in c.get("/").text
     assert "<title>AP</title>" in c.get("/run/some-id").text  # client route survives reload
+    assert c.head("/").status_code == 200 and c.head("/run/some-id").status_code == 200
     js = c.get("/assets/app-123.js")
     assert js.text == "console.log(1)" and "immutable" in js.headers["cache-control"]
     assert c.get("/assets/missing-999.js").status_code == 404
